@@ -5,7 +5,6 @@
 <link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <link href="../static/css/bootstrap-datetimepicker.min.css" rel="stylesheet" media="screen">
 <head>
-    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=XGvfZRcqMC056a6GSpg81vIO"></script>
     <title>FijiBook 首页</title>
 </head>
 
@@ -178,7 +177,7 @@
                                             <div id="locationSel"></div>
                                         </div>
                                         <div class="col-md-6 col-xs-12">
-                                            <div id="maps" style="height:300px;"></div>
+                                            <div id="maps" style="height:300px;width:100%"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -701,94 +700,137 @@
 
 </script>
 
-//地图相关js
+<!--地图相关js  异步加载-->
 <script type="text/javascript">
-    var map = new BMap.Map("maps");//创建新的地图
-	var point = new BMap.Point(116.331398,39.897445);//在地图中有一个点
-	map.centerAndZoom(point,16);//设置中心点和级别
-	var geolocation = new BMap.Geolocation();//地理位置
-	var gc = new BMap.Geocoder();//位置编码
-	geolocation.getCurrentPosition(function(r)
-	{
-		if(this.getStatus() == BMAP_STATUS_SUCCESS)
-		{
-		    //添加标记
-		    var myIcon = new BMap.Icon("http://api.map.baidu.com/img/markers.png", new BMap.Size(23, 25),
-            {
-                offset: new BMap.Size(10, 25),
-                imageOffset: new BMap.Size(0, 0 - 12 * 25)
-            });
-            var mk = new BMap.Marker(r.point, {icon: myIcon});
-            point = r.point;
-            map.addOverlay(mk)
 
-			var poiR = 500//设定poi半径
-			var poiNum = 10//设定poi数量
-			map.panTo(r.point);//把定位点转到
-			//map.addOverlay(new BMap.Circle(r.point,poiR));        //添加一个圆形覆盖物
-			//document.getElementById("location").innerHTML = r.point.lng+', '+r.point.lat;
-			//地址编码转码，对指定的坐标点进行反地址解析。如果解析成功，则回调函数的参数为GeocoderResult对象，否则回调函数的参数为null。(自 1.1 新增)
-			//POI参数
-			var mOption = {
-			    poiRadius : poiR,
-			    numPois : poiNum
-			}
-			gc.getLocation(r.point, function(rs)
-			{
-			    //GeocoderResult对象里有addressComponments和surroundingPois
-                var addComp = rs.addressComponents;
-                var surPois = rs.surroundingPois;
-                var business = rs.business;
-                //document.getElementById("address").innerHTML =(addComp.province + ", " + addComp.city + ", " +
-                //    addComp.district + ", " + addComp.street + ", " + addComp.streetNumber);
-                document.getElementById("lng").value = r.point.lng;
-                document.getElementById("lat").value = r.point.lat;
-                var locationStreet = (addComp.province + ", " + addComp.city + ", " +
-                    addComp.district + ", " + addComp.street + ", " + addComp.streetNumber + ", ")
-                document.getElementById("street").value = locationStreet;
-                document.getElementById("inputLocation").value = locationStreet + surPois[0].title;
-                if (surPois.length < 10)
-                    var maxI = surPois.length;
-                else
-                    var maxI = 10;
-                for (var i=0;i<surPois.length;i++)
+	function loadJScript() {
+		var script = document.createElement("script");
+		script.type = "text/javascript";
+		script.src = "http://api.map.baidu.com/api?v=2.0&ak=XGvfZRcqMC056a6GSpg81vIO&callback=init";
+		document.body.appendChild(script);
+	}
+	var map;
+	var point;
+	var mk;
+    function init() {
+            map = new BMap.Map("maps");            // 创建Map实例
+            map.disableInertialDragging();  //关闭惯性拖拽
+            point = new BMap.Point(116.331398, 39.897445); // 创建点坐标
+            map.centerAndZoom(point,16);
+            map.enableScrollWheelZoom();                 //启用滚轮放大缩小
+            //获取定位
+            var geolocation = new BMap.Geolocation();//地理位置
+
+            geolocation.getCurrentPosition(function(r)
+            {
+                if(this.getStatus() == BMAP_STATUS_SUCCESS)
                 {
-                    var title = String.fromCharCode('A'.charCodeAt()+i) + '.' + surPois[i].title;
-                    if (i==0)
-                        document.getElementById("locationSel").innerHTML += ('<div class="col-md-4 col-xs-12"><p><input type="radio" onClick="javascript:check()" checked="checked" name="locationSel" value="'
-                        + surPois[i].title + '"/> ' + title + '</p></div>');
-                    else
-                        document.getElementById("locationSel").innerHTML += ('<div class="col-md-4 col-xs-12"><p><input type="radio" onClick="javascript:check()" name="locationSel" value="'
-                        + surPois[i].title + '"/> ' + title + '</p></div>');
+                    //添加标记
                     var myIcon = new BMap.Icon("http://api.map.baidu.com/img/markers.png", new BMap.Size(23, 25),
                     {
                         offset: new BMap.Size(10, 25),
-                        imageOffset: new BMap.Size(0, 0 - i * 25)
+                        imageOffset: new BMap.Size(0, 0 - 12 * 25)
                     });
-                    var mk1 = new BMap.Marker(surPois[i].point, {icon: myIcon});
-                    map.addOverlay(mk1);
+                    var mk = new BMap.Marker(r.point, {icon: myIcon});
+                    point = r.point;
+                    map.addOverlay(mk);
+                    mk.enableDragging();
+                    mk.setTop(true);
+                    map.panTo(r.point);//把定位点转到
+                    //mk.addEventListener("dragend",function(e){
+                     //   point=mk.getPosition();
+                   // });
+                   geiPOI(point);
                 }
-            }
-            ,mOption);
-		}
-		else {
-			alert('failed'+this.getStatus());
-		}
-	},{enableHighAccuracy: true})
-	//关于状态码
-	//BMAP_STATUS_SUCCESS	检索成功。对应数值“0”。
-	//BMAP_STATUS_CITY_LIST	城市列表。对应数值“1”。
-	//BMAP_STATUS_UNKNOWN_LOCATION	位置结果未知。对应数值“2”。
-	//BMAP_STATUS_UNKNOWN_ROUTE	导航结果未知。对应数值“3”。
-	//BMAP_STATUS_INVALID_KEY	非法密钥。对应数值“4”。
-	//BMAP_STATUS_INVALID_REQUEST	非法请求。对应数值“5”。
-	//BMAP_STATUS_PERMISSION_DENIED	没有权限。对应数值“6”。(自 1.1 新增)
-	//BMAP_STATUS_SERVICE_UNAVAILABLE	服务不可用。对应数值“7”。(自 1.1 新增)
-	//BMAP_STATUS_TIMEOUT	超时。对应数值“8”。(自 1.1 新增)
+                else {
+                    alert('failed'+this.getStatus());
+                }
+            },{enableHighAccuracy: true})
+            //关于状态码
+            //BMAP_STATUS_SUCCESS	检索成功。对应数值“0”。
+            //BMAP_STATUS_CITY_LIST	城市列表。对应数值“1”。
+            //BMAP_STATUS_UNKNOWN_LOCATION	位置结果未知。对应数值“2”。
+            //BMAP_STATUS_UNKNOWN_ROUTE	导航结果未知。对应数值“3”。
+            //BMAP_STATUS_INVALID_KEY	非法密钥。对应数值“4”。
+            //BMAP_STATUS_INVALID_REQUEST	非法请求。对应数值“5”。
+            //BMAP_STATUS_PERMISSION_DENIED	没有权限。对应数值“6”。(自 1.1 新增)
+            //BMAP_STATUS_SERVICE_UNAVAILABLE	服务不可用。对应数值“7”。(自 1.1 新增)
+            //BMAP_STATUS_TIMEOUT	超时。对应数值“8”。(自 1.1 新增)
+    }
 
-	$('#collapseOne').on('show.bs.collapse', function () {
-        map.centerAndZoom(point,16);//map重定向到中心点
-        //console.info('hello');
+    window.onload = loadJScript;
+    //监听展开折叠事件
+	$('#collapseOne').on('shown.bs.collapse', function () {
+        map.panTo(point);//map重定向到中心点
+
+        map.addEventListener("dragging",function(e){
+            map.clearOverlays();
+           var pt = map.getBounds().getCenter();
+           //alert("LON:" + pt.lng + " LAT:" + pt.lat);
+            var myIcon = new BMap.Icon("http://api.map.baidu.com/img/markers.png", new BMap.Size(23, 25),
+                {
+                   offset: new BMap.Size(10, 25),
+                   imageOffset: new BMap.Size(0, 0 - 12 * 25)
+                });
+            mk = new BMap.Marker(pt, {icon: myIcon});
+                    map.addOverlay(mk);
+                    mk.setTop(true);
+        });
+
+        map.addEventListener("dragend",function(e){
+            mk.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
+            document.getElementById("locationSel").innerHTML='';
+            var pt = map.getBounds().getCenter();
+            point=pt;
+            geiPOI(pt);
+            mk.setAnimation(null); //停止跳动
+        });
     })
+
+
+    function geiPOI(pt){
+        var poiR = 500//设定poi半径
+        var poiNum = 10//设定poi数量
+        var gc = new BMap.Geocoder();//位置编码
+        //POI参数
+        var mOption = {
+            poiRadius : poiR,
+            numPois : poiNum}
+        gc.getLocation(pt, function(rs)
+                    {
+                        //GeocoderResult对象里有addressComponments和surroundingPois
+                        var addComp = rs.addressComponents;
+                        var surPois = rs.surroundingPois;
+                        var business = rs.business;
+                        document.getElementById("lng").value = pt.lng;
+                        document.getElementById("lat").value = pt.lat;
+                        var locationStreet = (addComp.province + ", " + addComp.city + ", " +
+                            addComp.district + ", " + addComp.street + ", " + addComp.streetNumber + ", ")
+                        document.getElementById("street").value = locationStreet;
+                        document.getElementById("inputLocation").value = locationStreet + surPois[0].title;
+                        if (surPois.length < 10)
+                            var maxI = surPois.length;
+                        else
+                            var maxI = 10;
+                        for (var i=0;i<surPois.length;i++)
+                        {
+                            var title = String.fromCharCode('A'.charCodeAt()+i) + '.' + surPois[i].title;
+                            if (i==0)
+                                document.getElementById("locationSel").innerHTML += ('<div class="col-md-6 col-xs-12"><p><input type="radio" onClick="javascript:check()" checked="checked" name="locationSel" value="'
+                                + surPois[i].title + '"/> ' + title + '</p></div>');
+                            else
+                                document.getElementById("locationSel").innerHTML += ('<div class="col-md-6 col-xs-12"><p><input type="radio" onClick="javascript:check()" name="locationSel" value="'
+                                + surPois[i].title + '"/> ' + title + '</p></div>');
+                            var myIcon = new BMap.Icon("http://api.map.baidu.com/img/markers.png", new BMap.Size(23, 25),
+                            {
+                                offset: new BMap.Size(10, 25),
+                                imageOffset: new BMap.Size(0, 0 - i * 25)
+                            });
+                            var mk1 = new BMap.Marker(surPois[i].point, {icon: myIcon});
+                            map.addOverlay(mk1);
+                        }
+                    }
+                    ,mOption);
+    }
 </script>
 
