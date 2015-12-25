@@ -174,10 +174,10 @@
                                 <div class="panel-body">
                                     <div class="row">
                                         <div class="col-md-6 col-xs-12">
-                                            <div id="locationSel"></div>
+                                            <div id="maps" style="height:300px;width:100%"></div>
                                         </div>
                                         <div class="col-md-6 col-xs-12">
-                                            <div id="maps" style="height:300px;width:100%"></div>
+                                            <div id="locationSel"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -213,8 +213,17 @@
                 </div>
             <!--</div>-->
         </div>
-        <br /><br />
         <div class="row">
+            <div class="col-md-6 col-xs-12">
+                <div class="alert alert-info" role="alert">
+                    <strong>今日：</strong> 收入￥<span id="todayIn" class="badge">{{todayIn}}</span>&nbsp;&nbsp;支出￥<span id="todayOut" class="badge">{{todayOut}}</span>
+                </div>
+            </div>
+            <div class="col-md-6 col-xs-12">
+                <div class="alert alert-info" role="alert">
+                    <strong>本月：</strong> 收入￥<span id="monthIn" class="badge">{{monthIn}}</span>&nbsp;&nbsp;支出￥<span id="monthOut" class="badge">{{monthOut}}</span>
+                </div>
+            </div>
             <div class="col-md-4 col-xs-12">
                 <span>
                     <button class="btn btn-primary" data-toggle="modal" data-target="#myModal">
@@ -225,8 +234,8 @@
                     <input type="text" autocomplete="off" id="mirror_field" value="{{today}}" readonly />
                 </span>
             </div>
-            <div class="col-md-8 col-xs-12">
-                  <ul class="nav nav-pills">
+            <div class="col-md-4 col-xs-12">
+                  <ul id="nav-pills" class="nav nav-pills">
                       <li role="presentation"><a name="dateOptions" id="5">five</a></li>
                       <li role="presentation"><a name="dateOptions" id="4">four</a></li>
                       <li role="presentation"><a name="dateOptions" id="3">three</a></li>
@@ -292,7 +301,7 @@
                                     {% for j1 in j %}
                                         <td>{{j1}}</td>
                                     {% end %}
-                                    <td><a class='glyphicon glyphicon-pencil' aria-hidden='true' data-toggle='modal' data-target='#recordEdit' role='button'></a></td>
+                                    <td><a class='glyphicon glyphicon-edit' aria-hidden='true' data-toggle='modal' data-target='#recordEdit' role='button'></a></td>
                                     <td><a class='glyphicon glyphicon-trash' aria-hidden='true' role='button' onClick='javascript:delRecord(this)'></a></td>
                                 </tr>
                             </tbody>
@@ -348,7 +357,7 @@
                                           <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
                                               {% for k in expensebody %}
                                                 {% for k1 in k %}
-                                                <li><a href="#">{{k1}}</a></li>
+                                                <li><a onclick="javascript:dropdownSel(this)">{{k1}}</a></li>
                                                 {% end %}
                                               {% end %}
                                           </ul>
@@ -366,7 +375,7 @@
                                           <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
                                               {% for k in incomebody %}
                                                 {% for k1 in k %}
-                                                <li><a href="#">{{k1}}</a></li>
+                                                <li><a onclick="javascript:dropdownSel(this)">{{k1}}</a></li>
                                                 {% end %}
                                               {% end %}
                                           </ul>
@@ -420,7 +429,7 @@
     options.each(function(){
         i--;
         var dd=GetSomeDate(i);
-        $(this).text(dd.getDate());
+        $(this).html(dd.getDate());
     });
 
     //获取某天的日期
@@ -453,13 +462,13 @@
 
     //日期选择器日期change事件函数
     $('.form_date').datetimepicker().on('changeDate', function(ev){
-        $('.nav-pills > li').removeClass('active');//取消全部active
+        $('#nav-pills > li').removeClass('active');//取消全部active
         getRemoteRecord();
     });
 
     //日期导航条点击事件触发函数
     $("[name='dateOptions']").click(function(){
-        $('.nav-pills > li').removeClass('active');//取消全部active
+        $('#nav-pills > li').removeClass('active');//取消全部active
         $(this).parent().addClass('active');//当前点击设为active
         var agoNum=parseInt($(this).attr("id"));
         var dd=GetSomeDate(agoNum);//获取当前选择的日期
@@ -520,25 +529,6 @@
 
    //$('.glyphicon-trash').click(function(){alert('hello')});
 
-    //发出请求 获取json数据并显示在table
-    function getRemoteRecord(){
-        $("#recordsTb tr").remove();
-        //console.info("user:",user);
-        strdate = $("#mirror_field").val();
-        //console.info("strdate:",strdate);
-        $.getJSON("/record",{ myDate:strdate},function(records){
-            $.each(records,function(i,record){
-                //poiTmp=record['1'].split(',');
-                //poi=poiTmp[poiTmp.length-1];
-                var newRow = "<tr><td>"+record['0']+"</td><td>"+record['1']+"</td><td>"+record['2']+"</td><td>"+record['3']+"</td><td>"+record['4'];
-                newRow+="</td><td><a class='glyphicon glyphicon-pencil' aria-hidden='true' data-toggle='modal' data-target='#recordEdit' role='button'></a></td>";
-                newRow+="<td><a class='glyphicon glyphicon-trash' aria-hidden='true' role='button' onClick='javascript:delRecord(this)'></a></td></tr>";
-                //newRow+="<td><a class='glyphicon glyphicon-trash' aria-hidden='true' role='button'></a></td></tr>";
-                $("#recordsTb").append(newRow);
-            });
-        });
-    }
-
     //发出post请求，更新记录
     function updateRemoteRecord(){
         var time= $('#recordDate').val();
@@ -572,7 +562,6 @@
       //  var c = document.cookie.match("\\b" + name + "=([^;]*)\\b");
    //  //   return c ? c[1] : undefined;
    // }
-
   });
 </script>
 
@@ -679,7 +668,7 @@
                 //poiTmp=record['1'].split(',');
                 //poi=poiTmp[poiTmp.length-1];
                 var newRow = "<tr><td>"+record['0']+"</td><td>"+record['1']+"</td><td>"+record['2']+"</td><td>"+record['3']+"</td><td>"+record['4'];
-                newRow+="</td><td><a class='glyphicon glyphicon-pencil' aria-hidden='true' data-toggle='modal' data-target='#recordEdit' role='button'></a></td>";
+                newRow+="</td><td><a class='glyphicon glyphicon-edit' aria-hidden='true' data-toggle='modal' data-target='#recordEdit' role='button'></a></td>";
                 newRow+="<td><a class='glyphicon glyphicon-trash' aria-hidden='true' role='button' onClick='javascript:delRecord(this)'></a></td></tr>";
                 //newRow+="<td><a class='glyphicon glyphicon-trash' aria-hidden='true' role='button'></a></td></tr>";
                 $("#recordsTb").append(newRow);
@@ -696,8 +685,19 @@
                 jqXHR.setRequestHeader('X-Xsrftoken', xsrf[2]);
             }
         }
-}});
+    }});
 
+    function dropdownSel(object)
+    {
+        if($('#inOrOut').val()=='支出')
+        {
+             $('[name=newExpenseType]').text($(object).text());
+        }
+        else if ($('#inOrOut').val()=='收入')
+        {
+             $('[name=newIncomeType]').text($(object).text());
+        }
+    }
 </script>
 
 <!--地图相关js  异步加载-->
@@ -720,7 +720,6 @@
             map.enableScrollWheelZoom();                 //启用滚轮放大缩小
             //获取定位
             var geolocation = new BMap.Geolocation();//地理位置
-
             geolocation.getCurrentPosition(function(r)
             {
                 if(this.getStatus() == BMAP_STATUS_SUCCESS)
@@ -756,35 +755,37 @@
             //BMAP_STATUS_PERMISSION_DENIED	没有权限。对应数值“6”。(自 1.1 新增)
             //BMAP_STATUS_SERVICE_UNAVAILABLE	服务不可用。对应数值“7”。(自 1.1 新增)
             //BMAP_STATUS_TIMEOUT	超时。对应数值“8”。(自 1.1 新增)
+            map.addEventListener("dragging",function(e){
+                var pt = map.getBounds().getCenter();
+                mk.setPosition(pt);
+                //alert("LON:" + pt.lng + " LAT:" + pt.lat);
+            });
+
+            map.addEventListener("moveend",function(e){
+            //alert('响应！');
+                map.clearOverlays();
+                var pt = map.getBounds().getCenter();
+                //alert("LON:" + pt.lng + " LAT:" + pt.lat);
+                var myIcon = new BMap.Icon("http://api.map.baidu.com/img/markers.png", new BMap.Size(23, 25),
+                    {
+                       offset: new BMap.Size(10, 25),
+                       imageOffset: new BMap.Size(0, 0 - 12 * 25)
+                    });
+                mk = new BMap.Marker(pt, {icon: myIcon});
+                mk.enableDragging();
+                map.addOverlay(mk);
+                mk.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
+                document.getElementById("locationSel").innerHTML='<p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p>';
+                point=pt;
+                geiPOI(pt);
+                mk.setAnimation(null); //停止跳动
+            });
     }
 
     window.onload = loadJScript;
     //监听展开折叠事件
 	$('#collapseOne').on('shown.bs.collapse', function () {
         map.panTo(point);//map重定向到中心点
-
-        map.addEventListener("dragging",function(e){
-            map.clearOverlays();
-           var pt = map.getBounds().getCenter();
-           //alert("LON:" + pt.lng + " LAT:" + pt.lat);
-            var myIcon = new BMap.Icon("http://api.map.baidu.com/img/markers.png", new BMap.Size(23, 25),
-                {
-                   offset: new BMap.Size(10, 25),
-                   imageOffset: new BMap.Size(0, 0 - 12 * 25)
-                });
-            mk = new BMap.Marker(pt, {icon: myIcon});
-                    map.addOverlay(mk);
-                    mk.setTop(true);
-        });
-
-        map.addEventListener("dragend",function(e){
-            mk.setAnimation(BMAP_ANIMATION_BOUNCE); //跳动的动画
-            document.getElementById("locationSel").innerHTML='';
-            var pt = map.getBounds().getCenter();
-            point=pt;
-            geiPOI(pt);
-            mk.setAnimation(null); //停止跳动
-        });
     })
 
 
@@ -798,6 +799,7 @@
             numPois : poiNum}
         gc.getLocation(pt, function(rs)
                     {
+                        document.getElementById("locationSel").innerHTML='<p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p><p></p>';
                         //GeocoderResult对象里有addressComponments和surroundingPois
                         var addComp = rs.addressComponents;
                         var surPois = rs.surroundingPois;

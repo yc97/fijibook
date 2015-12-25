@@ -130,6 +130,22 @@ class Fijibook_MySQLdb(MySQLDatabase):
         cmd = "DELETE FROM balance WHERE `time`='%s'AND `user`='%s';"%(time, user);
         return self.execute(cmd)
 
+    def getTodayInSum(self, user):
+        cmd = "SELECT SUM(money) FROM balance WHERE user='%s' AND to_days(time) = to_days(now()) AND money>0"%(user);
+        return self.execute(cmd)
+
+    def getTodayOutSum(self, user):
+        cmd = "SELECT SUM(money) FROM balance WHERE user='%s' AND to_days(time) = to_days(now()) AND money<0"%(user);
+        return self.execute(cmd)
+
+    def getMonthInSum(self, user):
+        cmd = "SELECT SUM(money) FROM balance WHERE user='%s' AND DATE_FORMAT(time,'%%Y%%m')=DATE_FORMAT(CURDATE(),'%%Y%%m') AND money>0"%(user);
+        return self.execute(cmd)
+
+    def getMonthOutSum(self, user):
+        cmd = "SELECT SUM(money) FROM balance WHERE user='%s' AND DATE_FORMAT(time,'%%Y%%m')=DATE_FORMAT(CURDATE(),'%%Y%%m') AND money<0"%(user);
+        return self.execute(cmd)
+
 if __name__ == '__main__':
     Defaults.config_path = '../config/data.conf'
     print Fijibook_MySQLdb().addUser('luke', 'jmb12e')

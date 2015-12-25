@@ -24,12 +24,17 @@ class indexHandler(BaseHandler):
         tableRec = Fijibook_MySQLdb().getRecord(user, today)
         expenseTypesRec = Fijibook_MySQLdb().getExpenseTypes(user)
         incomeTypesRec = Fijibook_MySQLdb().getIncomeTypes(user)
+        todayIn=Fijibook_MySQLdb().getTodayInSum(user)
+        todayOut=Fijibook_MySQLdb().getTodayOutSum(user)
+        monthIn=Fijibook_MySQLdb().getMonthInSum(user)
+        monthOut=Fijibook_MySQLdb().getMonthOutSum(user)
         # tableRec = Fijibook_MySQLdb().getTable()
         if recSumRec['code'] or userSumRec['code'] or newTimeRec['code'] or expenseTypesRec['code'] or incomeTypesRec['code']:
             self.render('bootstrap_test.html', user=user, recSum=0,
                         userSum=-1, newTime=-1,
                         thead=['时间', '位置', '金额',  '账单分类', '备注'],today=today,
-                        tbody=[], expensebody=expenseTypesRec['result'], incomebody=incomeTypesRec['result'])
+                        tbody=[], expensebody=expenseTypesRec['result'], incomebody=incomeTypesRec['result'],
+                        todayIn=todayIn['result'][0][0], todayOut=todayOut['result'][0][0], monthIn=monthIn['result'][0][0], monthOut=monthOut['result'][0][0])
             print('Table is empty. Or error getting recSum or userSum or newTime or table. \
             code : [recSum, userSum, newTime, table, types]'
                        + str(recSumRec) + str(userSumRec) + str(newTimeRec) + str(tableRec) + str(expenseTypesRec) + str(incomeTypesRec))
@@ -44,7 +49,8 @@ class indexHandler(BaseHandler):
                         thead=['时间', '位置', '金额',  '账单分类', '备注'],
                         tbody=tbody,
                         expensebody=expenseTypesRec['result'],
-                        incomebody=incomeTypesRec['result'])
+                        incomebody=incomeTypesRec['result'],
+                        todayIn=todayIn['result'][0][0], todayOut=todayOut['result'][0][0], monthIn=monthIn['result'][0][0], monthOut=monthOut['result'][0][0])
 
     @tornado.web.authenticated
     def post(self):
