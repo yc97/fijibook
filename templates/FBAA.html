@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=1" />
+<link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="../static/css/jquery.tagsinput.css" />
+
+<html>
+<head><title>FijiBook for Friends</title></head>
+<body>
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar"></button>
+                <a class="navbar-brand" href="#">FijiBook</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/index">Home</a></li>
+                    <li class="active"><a href="#">AA记账</a></li>
+                    <li><a href="/charts">账单</a></li>
+                    <!--<li><a href="#contact">Contact</a></li>-->
+                    <!--<li class="dropdown">-->
+                        <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>-->
+                        <!--<ul class="dropdown-menu">-->
+                            <!--<li><a href="#">Action</a></li>-->
+                            <!--<li role="separator" class="divider"></li>-->
+                            <!--<li class="dropdown-header">Nav header</li>-->
+                            <!--<li><a href="#">Separated link</a></li>-->
+                        <!--</ul>-->
+                    <!--</li>-->
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a id="user" href="#user">{{user}}</a></li>
+                    <li class="active"><a href="/logout">注销</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="jumbotron" id="content" tabindex="-1">
+        <div class="container">
+            <!--<div class="container theme-showcase" role="main">-->
+            <div class="row">
+                <div class="col-md-12 col-xs-12">
+                    <!--<div class="jumbotron">-->
+                        <h1> AA记账 </h1>
+                        <p> 聚会记账一目了然，一键获取结算方案~</p>
+                    <!--</div>-->
+                </div>
+            </div>
+            <!--</div>-->
+        </div>
+    </div>
+    <div class="container">
+       <div class="row">
+            <div class="col-md-12 col-xs-12">
+                <!--<div class="col-md-6 col-xs-12">-->
+                <!--</div>-->
+                <form name="activity" id="thisForm">
+                    <div class="col-md-4 col-xs-12">
+                        <h3 id="actLabel">创建活动:</h3>
+                        <input id="newActInput" name="newActInput" type="text" class="form-control" placeholder="输入活动名称" value="{{activity}}" required>
+                        <h3 id="friendLabel">添加参与者:</h3>
+                        <div><input name="tags" id="tags" value="{{friends}}" autocomplete="off" /></div>
+                        <span class="btn btn-default" id="confirm">确认</span>
+                        <input id="busy" class="hidden" type="text" value="{{isbusy}}"/>
+                    </div>
+                </form>
+                <div class="col-md-8 col-xs-12">
+                    <div id="radarChart" style="height:400px"></div>
+                </div>
+                <div class="col-md-12 col-xs-12">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead >
+                                <tr >
+                                    {% for i in thead %}
+                                        <th >{{i}}</th>
+                                    {% end %}
+                                </tr>
+                            </thead>
+                                {% for j in tbody %}
+                                    <tbody id="recordsTb">
+                                        <tr class="null">
+                                            {% for j1 in j[0:8] %}
+                                                <td>{{j1}}</td>
+                                            {% end %}
+                                            <td id="status" class="hidden">{{j[8]}}</td>
+                                            <!--<td><a class='glyphicon glyphicon-edit' aria-hidden='true' data-toggle='modal' data-target='#recordEdit' role='button'></a></td>-->
+                                            <!--<td><a class='glyphicon glyphicon-trash' aria-hidden='true' role='button' onClick='javascript:delRecord(this)'></a></td>-->
+                                        </tr>
+                                    </tbody>
+                                {% end %}
+                        </table>
+                    </div>
+                </div>
+                <div class="col-md-12 col-xs-12">
+                    <!-- 按钮触发模态框 -->
+                    <span class="btn btn-lg btn-default" id="sign" data-toggle="modal" data-target="#myModal">记一笔</span>
+                    <span class="btn btn-lg btn-default" data-toggle="modal" data-target="#balanceModal">结算方案</span>
+                    <span class="btn btn-lg btn-default" id="clear" onclick="javascript:SquareUp()">清账</span>
+                </div>
+
+                <!-- 记一笔模态框（Modal） -->
+                <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                   <div class="modal-dialog">
+                      <div class="modal-content">
+                         <div class="modal-header">
+                            <button type="button" class="close"
+                               data-dismiss="modal" aria-hidden="true">
+                                  &times;
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">
+                               添加记录
+                            </h4>
+                         </div>
+                         <div class="modal-body">
+                            <form name="info">
+                            {% raw xsrf_form_html() %}
+                                <div class="col-md-12 col-xs-12">
+                                    <div class="form-group">
+                                        <div class="input-group input-group-lg">
+                                            <span class="input-group-addon">金额:</span>
+                                            <input autocomplete="off" class="form-control" type="number" step="0.01" min="0" id="money" name="money" required="required" placeholder="0.00" aria-describedby="sizing-addon1">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12 col-xs-12">
+                                    <span class="btn btn-lg btn-default">付款人:</span>
+                                        <!-- Split button -->
+                                        <div class="btn-group btn-group-lg">
+                                            <button id="payer" type="button" class="btn btn-default">{{user}}</button>
+                                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <span class="caret"></span>
+                                                <span class="sr-only">Toggle Dropdown</span>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <!--<li><a href="#">{{user}}</a></li>-->
+                                            </ul>
+                                       </div>
+                                    </div>
+
+                                   <div class="row">
+                                       <div class="col-md-12"><br />
+                                           <div class="btn-group" data-toggle="buttons">
+                                                {% for k in expensebody[0:12] %}
+                                                    {% for k1 in k %}
+                                                            <div class="col-md-3 col-xs-6">
+                                                                <!--<h3>-->
+                                                                    <label class="btn btn-default btn-group-justified">
+                                                                        {% if k==expensebody[0] %}
+                                                                        <input type="radio"  id="firstExType" name="type" value="{{k1}}" autocomplete="off" required="required" checked="checked">{{k1}}
+                                                                        {%else%}
+                                                                        <input type="radio"  name="type" value="{{k1}}" autocomplete="off" required="required">{{k1}}
+                                                                        {% end %}
+                                                                    </label>
+                                                                <!--</h3>-->
+                                                            </div>
+                                                    {% end %}
+                                                {% end %}
+                                               <div id="moreTypes" class="collapse fade">
+                                                   {% for k in expensebody[12:] %}
+                                                    {% for k1 in k %}
+                                                            <div class="col-md-3 col-xs-6">
+                                                                <!--<h3>-->
+                                                                    <label class="btn btn-default btn-group-justified">
+                                                                        <input type="radio"  name="type" value="{{k1}}" autocomplete="off" required="required">{{k1}}
+                                                                    </label>
+                                                                <!--</h3>-->
+                                                            </div>
+                                                    {% end %}
+                                                {% end %}
+                                               </div>
+                                           </div>
+                                           <div class="col-md-12"><br />
+                                               <button id="moreTypeBtn" type="button" class="btn btn-default btn-group-justified" data-toggle="collapse" data-target="#moreTypes">更多分类</button>
+                                           </div>
+                                       </div>
+                                    </div>
+
+                            <br />
+                            <!--<div class="page-header"></div>-->
+                            <div class="row">
+                                <div class="col-md-6 col-xs-12">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">定位:</span>
+                                        <input type="hidden" id="street" name="street"  value="" >
+                                        <input type="text" id="inputLocation" name="inputLocation" class="form-control" placeholder="Your Location" autocomplete="off">
+                                    </div><!-- /input-group -->
+                                </div>
+                                <div class="col-md-3 col-xs-6">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">经度:</span>
+                                        <input type="text" id="lng" name="lng" class="form-control" placeholder="Your Location" autocomplete="off">
+                                    </div><!-- /input-group -->
+                                </div>
+                                <div class="col-md-3 col-xs-6">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-addon">纬度:</span>
+                                        <input type="text"  id="lat" name="lat" class="form-control" placeholder="Your Location" autocomplete="off">
+                                    </div><!-- /input-group -->
+                                </div>
+                            </div>
+                            <br />
+                            <div class="row">
+                                <div class="col-md-12 col-xs-12">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingOne">
+                                            <h4 class="panel-title">
+                                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                    切换位置
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                                            <div class="panel-body">
+                                                <div class="row">
+                                                    <div class="col-md-6 col-xs-12">
+                                                        <div id="maps" style="height:300px;width:100%"></div>
+                                                    </div>
+                                                    <div class="col-md-6 col-xs-12">
+                                                        <div id="locationSel"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-8 col-xs-12">
+                                    <div class="form-group">
+                                        <div class="input-group input-group-lg">
+                                            <span class="input-group-addon">备注:</span>
+                                            <input class="form-control" type="text"  id="remark" name="remark"  placeholder="Details！" aria-describedby="sizing-addon1" autocomplete="off">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 col-xs-12">
+                                    <button class="btn btn-lg btn-success btn-group-justified" id="submit" data-dismiss="modal">非记不可</button>
+                                </div>
+                            </div>
+
+                        </form>
+                         </div>
+                         <!--<div class="modal-footer">-->
+                            <!--<button type="button" class="btn btn-default" -->
+                               <!--data-dismiss="modal">关闭-->
+                            <!--</button>-->
+                            <!--<button type="button" class="btn btn-primary">-->
+                               <!--提交更改-->
+                            <!--</button>-->
+                         <!--</div>-->
+                      </div><!-- /.modal-content -->
+                    </div><!-- /.modal -->
+                </div>
+                               <!-- 结算模态框（Modal） -->
+                <div class="modal fade" id="balanceModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                   <div class="modal-dialog">
+                      <div class="modal-content">
+                         <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                                  &times;
+                            </button>
+                            <h4 class="modal-title" id="balanceModalLabel">
+                               结算方案推荐
+                            </h4>
+                         </div>
+                         <div class="modal-body" id="balanceModalBody">
+                            <ul class="list-group" id="balanceList">
+                              <!--<li class="list-group-item">Cras justo odio</li>-->
+                            </ul>
+                         </div>
+                         <div class="modal-footer">
+                            <button type="button" class="btn btn-default"
+                               data-dismiss="modal">关闭
+                            </button>
+                            <a class="btn btn-primary" id="saveImg">
+                               保存为图片
+                            </a>
+                         </div>
+                      </div><!-- /.modal-content -->
+                </div><!-- /.modal -->>
+
+         </div>
+            </div>
+       </div>
+        <hr />
+        <footer>
+            <p>© FijiBook 2016</p>
+        </footer>
+    </div>
+</body>
+
+
+<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script src="../static/js/map.js"></script>
+<script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
+<script src="../static/js/jquery.tagsinput.js"></script>
+<script src="../static/js/ajax-setup.js"></script>
+<!--<script src="//cdn.bootcss.com/html2canvas/0.5.0-beta3/html2canvas.min.js"></script>-->
+
+</html>
+
+<script type="text/javascript">
+  // 基于准备好的dom，初始化echarts图表
+    var myChart = echarts.init(document.getElementById('radarChart'));
+    option = {
+        title : {
+            text: '我的活动',
+            subtext: ''
+        },
+        tooltip : {
+            trigger: 'axis'
+        },
+        legend: {
+            x : 'center',
+            data:['实际消费','AA']
+        },
+        toolbox: {
+            show : true,
+            feature : {
+                mark : {show: true},
+                //dataView : {show: true, readOnly: false},
+                restore : {show: true},
+                saveAsImage : {show: true}
+            }
+        },
+        calculable : true,
+        polar : [
+            {
+                indicator : [
+                    {text : '', max  : 100},
+                ],
+                radius : 100
+            }
+        ],
+        series : [
+            {
+                name: '消费数据',
+                type: 'radar',
+                itemStyle: {
+                    normal: {
+                        areaStyle: {
+                            type: 'default'
+                        }
+                    }
+                },
+                data : [
+                    {
+                        value : [0,0,0,0,0,0],
+                        name : '实际消费'
+                    },
+                    {
+                        value : [0,0,0,0,0,0],
+                        name : 'AA'
+                    }
+                ]
+            }
+        ]
+    };
+        // 为echarts对象加载数据
+    myChart.setOption(option);
+
+//<!--新建activity js-->
+    $('#confirm').click(function(){
+        if  ($('#confirm').attr("disabled")!="disabled"&&validate_actform($('#thisForm'))){
+            saveActivity();
+            var actName=$('#newActInput').val();
+            var allFriends=$('#tags').val();
+            //console.info(friends)
+            var value=0;
+            freshRadar(actName,allFriends,value,100,0);
+        }
+    });
+
+    //刷新雷达图
+    function freshRadar(actName,allFriends,value,max,ave){
+           var friends=allFriends.split(',');
+           var friendJson = new Array();
+           var average=new Array();
+           $.each(friends, function(i,friend){
+                 friendJson[i]={text :friend, max  : max};
+                 average[i]=ave;
+                });
+
+            option.polar=[
+                {
+                    indicator : friendJson,
+                    radius : 130
+                }];
+            option.series[0]['data']=[
+                        {
+                            value : value,
+                            name : '实际消费'
+                        },
+                        {
+                            value : average,
+                            name : 'AA'
+                        },
+                    ];
+            option.title.text=actName;
+            // 为echarts对象加载数据
+            myChart.setOption(option);
+           // $('#newActInput').val('');
+    }
+</script>
+
+<script type="text/javascript">
+$('#submit').click(function(){
+    if  ($('#submit').attr("disabled")!="disabled")
+    {saveBalance();}
+});
+
+function saveBalance(){
+        var activity= $('#newActInput').val();
+        var friends=$('#tags').val();
+        var payer=$('#payer').text();
+        var money=$('#money').val();
+        var type=$("input[name='type']").val();
+        //console.info(type)
+        var location = $('#inputLocation').val();
+        var remark = $('#remark').val();
+        var lng = $('#lng').val();
+        var lat = $('#lat').val();
+        if (money==null||money=="")
+            {
+                alert("请输入金额");
+                return;
+            }
+        data={
+            goal:'balance',  //往哪个表存数据
+            activity:activity,
+            friends:friends,
+            payer:payer,
+            money:money,
+            type:type,
+            inputLocation:location,
+            remark:remark,
+            lng:lng,
+            lat:lat
+            }
+        $.post('/FBAA',data,function(){
+            //alert('success');
+            $('#money').val('');
+            //$.getJSON("/FBAA");
+            window.location.reload([true]);
+        });
+    }
+
+function saveActivity(){
+        var activity= $('#newActInput').val();
+        var friends=$('#tags').val();
+        data={
+            goal:'FBAA',  //往哪个表存数据
+            activity:activity,
+            friends:friends,
+            }
+
+        $.post('/FBAA',data,function(){
+            $('#confirm').attr("disabled","disabled");
+            });
+    }
+</script>
+<!--tagsinput js-->
+<script type="text/javascript">
+    $('#tags').tagsInput({
+      // 'autocomplete_url': url_to_autocomplete_api, //自动完成插件的文件地址，demo里有说明
+       //'autocomplete': { option: value, option: value}, //自动完成插件的参数，demo有说明。（提供个jquery.autocomplete的：http://bassistance.de/jquery-plugins/jquery-plugin-autocomplete/）
+       'height':'100px', //设置高度
+       'width':'350px',  //设置宽度
+       //'interactive':true, //是否允许添加标签，false为阻止
+       'defaultText':'添加朋友', //默认文字
+       //'onAddTag':callback_function, //增加标签的回调函数
+       //'onRemoveTag':callback_function, //删除标签的回调函数
+       //改变一个标签时的回调函数
+       //'onChange' : function(tag){},
+       //'removeWithBackspace' : true, //是否允许使用退格键删除前面的标签，false为阻止
+       'minChars' : 0, //每个标签的小最字符
+       'maxChars' : 0, //每个标签的最大字符，如果不设置或者为0，就是无限大
+       'placeholderColor' : '#666666' //设置defaultText的颜色
+    });
+</script>
+
+<script type="text/javascript">
+    function validate_required(field,alerttxt)
+    {
+    with (field)
+      {
+      if (value==null||value=="")
+        {alert(alerttxt);return false}
+      else {return true}
+      }
+    }
+
+    function validate_actform(thisform)
+    {
+    with (thisform)
+      {
+      if (validate_required(newActInput,"请输入活动!")==false)
+        {newActInput.focus();return false}
+      }
+    }
+</script>
+
+<script type="text/javascript">
+    function pageOnLoad(){
+        var isBusy=$('#busy').val();
+        if (isBusy=='true')
+            {
+                if($('#status').text()=='1'){
+                    $('#clear').attr("disabled","disabled");
+                    $('#sign').attr("disabled","disabled");
+                    $('#submit').attr("disabled","disabled");
+                }
+                $('#confirm').attr("disabled","disabled");
+                var actName= $('#newActInput').val();
+                var allFriends=$('#tags').val();
+                var friends=allFriends.split(',');
+                var value=new Array(friends.length);
+                for (var k=0;k<friends.length;k++) {value[k]=0;}
+                $.each($("tr[class='null']"),function(i,tr){
+                    //console.info($(tr).children());
+                    td=$(tr).children();
+                    $.each(friends,function(j,payer){
+                    //console.info(j,$(td[5]).text(),payer)
+                        if ($(td[5]).text()==payer)
+                        {
+                           value[j]+=Number($(td[2]).text());
+                        }
+                    });
+                });
+
+                max=Math.max.apply(null, value);
+                var sum=Number(0);
+                $.each(value,function(i,v){sum+=v;});
+                ave=sum/value.length;
+
+                freshRadar(actName,allFriends,value,max,ave);
+
+                $.each(friends,function(j,friend){
+                //console.info($('.dropdown-menu'));
+                    $('.dropdown-menu').append("<li><a onclick='javascript:dropdownSel(this)'>"+friend+"</a></li>");
+                });
+                $('#actLabel').text('当前活动');
+                $('#friendLabel').text('参与者');
+               // $('#tags').tagsInput({
+              //      'interactive':false
+               // });
+            }
+    }
+    $(document).ready(function(){pageOnLoad();});
+
+    function dropdownSel(object)
+    {
+        $('#payer').text($(object).text());
+    }
+</script>
+
+<script type="text/javascript">
+    $(function () { $('#balanceModal').on('show.bs.modal', function () {
+          $("#balanceList").html("");
+            balance();
+            //createImg();
+          })
+       });
+       //结算方案算法
+    function balance(){
+                var actName= $('#newActInput').val();
+                var allFriends=$('#tags').val();
+                var friends=allFriends.split(',');
+                var friendsNum=friends.length;
+                var value=new Array(friends.length);
+                for (var k=0;k<friends.length;k++) {value[k]=0;}
+                var balance=new Array(friendsNum)
+                //console.info(value)
+                $.each($("tr[class='null']"),function(i,tr){
+                    //console.info($(tr).children());
+                    td=$(tr).children();
+                    $.each(friends,function(j,payer){
+                    //console.info(j,$(td[5]).text(),payer)
+                        if ($(td[5]).text()==payer)
+                        {
+                           value[j]+=Number($(td[2]).text());
+                        }
+                    });
+                });
+                //max=Math.max.apply(null, value);
+                var sum=Number(0);
+                $.each(value,function(i,v){sum+=v;});
+                ave=sum/value.length;
+
+                //freshRadar(actName,allFriends,value,max,ave);
+                $.each(friends,function(j,friend){
+                    balance[j]={
+                        friend: friend,
+                        data:(value[j]-ave)
+                    };
+                });
+
+                balanceSorted=balance.sort(by("data")).reverse();
+                //console.info(balanceSorted)
+                var last=friendsNum-1;
+                for (var i=0;i<friendsNum-1;i++)
+                {
+                    if (balanceSorted[i]['data']>0)
+                        {
+                            for (var j=last;j>0;j--)
+                            {
+                                if (balanceSorted[i]['data']+balanceSorted[j]['data']>0)
+                                    {   //console.info(balanceSorted[i]['data'],balanceSorted[j]['data'])
+                                        $("#balanceList").append("<h4><li class='list-group-item'><span class='label label-success'>"
+                                            +balanceSorted[j]['friend']+"</span>应该支付给<span class='label label-info'>"
+                                            +balanceSorted[i]['friend']+"</span><span class='label label-danger'>"
+                                            +(-balanceSorted[j]['data']).toFixed(2)+"</span>元</li></h4>");
+                                        //console.info(balanceSorted[j]['friend']+'应该给'+balanceSorted[i]['friend']+(-balanceSorted[j]['data']).toFixed(2)+'元');
+                                        balanceSorted[i]['data']=balanceSorted[i]['data']+balanceSorted[j]['data'];
+                                        balanceSorted[j]['data']=0;
+                                        last=j-1;
+                                    }
+                                else
+                                    {
+                                        $("#balanceList").append("<h4><li class='list-group-item'><span class='label label-success'>"
+                                            +balanceSorted[j]['friend']+"</span>应该支付给<span class='label label-info'>"
+                                            +balanceSorted[i]['friend']+"</span><span class='label label-danger'>"
+                                            +(balanceSorted[i]['data']).toFixed(2)+"</span>元</li></h4>");
+                                        //console.info(balanceSorted[j]['friend']+'应该给'+balanceSorted[i]['friend']+(balanceSorted[i]['data']).toFixed(2)+'元');
+                                        balanceSorted[j]['data']=balanceSorted[i]['data']+balanceSorted[j]['data'];
+                                        balanceSorted[i]['data']=0;
+                                        last=j;
+                                        break;
+                                    }
+                            }
+                        }
+                    else
+                    {break;}
+                }
+    }
+
+//用于对象数组排序
+//by函数接受一个成员名字符串做为参数
+//并返回一个可以用来对包含该成员的对象数组进行排序的比较函数
+var by = function(name){
+    return function(o, p){
+        var a, b;
+        if (typeof o === "object" && typeof p === "object" && o && p) {
+            a = o[name];
+            b = p[name];
+            if (a === b) {
+                return 0;
+            }
+            if (typeof a === typeof b) {
+                return a < b ? -1 : 1;
+            }
+            return typeof a < typeof b ? -1 : 1;
+        }
+        else {
+            throw ("error");
+        }
+    }
+}
+
+</script>
+
+<script type="text/javascript">
+   //清帐按钮点击
+    function SquareUp()
+    {
+        if  ($('#clear').attr("disabled")!="disabled")
+        {
+            var choice=confirm("请在活动结束，并完成线下支付后清帐！您确认要清帐吗？");
+            if(choice){
+            var activity= $('#newActInput').val();
+            //data={time:dateTime};
+            $.ajax({
+              type: 'DELETE',
+              url: '/FBAA?activity='+activity,
+              //data: data,
+              success: function(){alert('清帐成功！');window.location.reload([true]);},
+              //dataType: 'json',
+              //error:console.info(data)
+            });
+            }
+        }
+    }
+</script>
+<!--将div保存为图片...失败.-->
+<!--<script type="text/javascript">-->
+    <!--function createImg(){-->
+        <!--console.info($('#balanceList'));-->
+        <!--html2canvas(window.body,-->
+        <!--{-->
+            <!--onrendered: function(canvas)-->
+            <!--{-->
+                <!--document.body.appendChild(canvas);-->
+                <!--$('#saveImg').attr( 'href' , canvas.toDataURL() ) ;-->
+    		    <!--$('#saveImg').attr( 'download' , 'balance.png' ) ;-->
+    		<!--},-->
+        <!--});-->
+    <!--}-->
+
+<!--</script>-->

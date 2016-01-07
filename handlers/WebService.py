@@ -32,7 +32,7 @@ class indexHandler(BaseHandler):
         if recSumRec['code'] or userSumRec['code'] or newTimeRec['code'] or expenseTypesRec['code'] or incomeTypesRec['code']:
             self.render('bootstrap_test.html', user=user, recSum=0,
                         userSum=-1, newTime=-1,
-                        thead=['时间', '位置', '金额',  '账单分类', '备注'],today=today,
+                        thead=['时间', '位置', '金额',  '分类', '备注'],today=today,
                         tbody=[], expensebody=expenseTypesRec['result'], incomebody=incomeTypesRec['result'],
                         todayIn=todayIn['result'][0][0], todayOut=todayOut['result'][0][0], monthIn=monthIn['result'][0][0], monthOut=monthOut['result'][0][0])
             print('Table is empty. Or error getting recSum or userSum or newTime or table. \
@@ -42,11 +42,11 @@ class indexHandler(BaseHandler):
             try:
                 tbody = tableRec['result']
             except KeyError:
-                tbody = (('No record. Please add ', ' ', ' ', ' ', ' '), (' ', ' ', ' ', ' ', ' '))
+                tbody = (('No record. Please add ', ' ', ' ', ' ', ' '), )
             self.render('bootstrap_test.html', user=user, recSum=recSumRec['result'][0][0],
                         userSum=userSumRec['result'][0][0], newTime=newTimeRec['result'][0][0],
                         today=today,
-                        thead=['时间', '位置', '金额',  '账单分类', '备注'],
+                        thead=['时间', '位置', '金额',  '分类', '备注'],
                         tbody=tbody,
                         expensebody=expenseTypesRec['result'],
                         incomebody=incomeTypesRec['result'],
@@ -159,7 +159,7 @@ class RecordHandler(BaseHandler):
         try:
             record = recordRec['result']
         except KeyError:
-            record = (('No record. Please add ', ' ', ' ', ' ', ' '), (' ', ' ', ' ', ' ', ' '))
+            record = (('No record. Please add ', ' ', ' ', ' ', ' '), )
         recordJson = json.dumps(record)
         self.write(recordJson)
 
@@ -185,3 +185,90 @@ class RecordHandler(BaseHandler):
         res = Fijibook_MySQLdb().delRecord(user, time)
         if res['code']:
             self.write('delete record failed!')
+class FBAAIndexHandler(BaseHandler):
+    def get(self):
+        user = self.get_current_user()
+        sys.stdout.flush()
+        res = Fijibook_MySQLdb().getActivity(user)
+        endedAct=[]
+        actingAct=[]
+        if res['code']==1:#查询出错
+            self.write('get activity failed!')
+        elif res['code']==2:  #没查到记录
+            self.render('FBAAIndex.html', user=user, actingAct=({'name': '还不快创建一个~', 'friends': ''},), endedAct=({'name': '没有活动哦~', 'friends': ''},))
+        elif res['code']==0:#查到了记录
+            # print res['result']
+            for act in res['result']:
+                if act[2] == 1:
+                    endedAct.append({'name': act[0], 'friends': ('参与者：'+act[1])})
+                elif act[2] == 0:
+                    actingAct.append({'name': act[0], 'friends': ('参与者：'+act[1])})
+            # print endedAct
+            # print actingAct
+            self.render('FBAAIndex.html', user=user, actingAct=actingAct, endedAct=endedAct)
+
+class FBAAHandler(BaseHandler):
+    def get(self):
+        user = self.get_current_user()
+        expenseTypesRec = Fijibook_MySQLdb().getExpenseTypes(user)
+        incomeTypesRec = Fijibook_MySQLdb().getIncomeTypes(user)
+        sys.stdout.flush()
+        activity = self.get_argument('activity')
+        if activity=='new':
+            print 'new'
+            self.render('FBAA.html', user=user, isbusy='false', friends=user, activity='', tbody='', thead='',
+                            expensebody=expenseTypesRec['result'],
+                            incomebody=incomeTypesRec['result'],)
+        else:
+            receive=Fijibook_MySQLdb().getActBalance(user, activity)
+            if receive['code']:  #查询出错
+                self.write('get activity balance failed!')
+            else:       #查到了记录
+                #print recive
+                print receive['result']
+                self.render('FBAA.html', user=user, isbusy='true', friends=receive['result'][0][4], activity=receive['result'][0][3], tbody=receive['result'],
+                            thead=['时间', '位置', '金额', '活动', '参与者', '付款人', '分类', '备注'],
+                                expensebody=expenseTypesRec['result'],
+                                incomebody=incomeTypesRec['result'],)
+
+    def post(self):
+        user = self.get_current_user()
+        activity = self.get_argument('activity')
+        friends = self.get_argument('friends')
+        goal = self.get_argument('goal')
+        if goal == 'FBAA':
+            res = Fijibook_MySQLdb().saveActivity(activity, friends, user)
+            if res['code']:
+                self.write('save activity failed!')
+        elif goal == 'balance':
+            money = self.get_argument('money')
+            payer = self.get_argument('payer')
+            location = self.get_argument('inputLocation')
+            remark = self.get_argument('remark')
+            type = self.get_argument('type')
+            lng = self.get_argument('lng')
+            lat = self.get_argument('lat')
+            (rec,rec1) = Fijibook_MySQLdb().saveActBalance(user=user, money=money, location=location, remark=remark, type=type, lng=lng, lat=lat, activity=activity, friends=friends,payer=payer)
+            if rec1['code'] or rec['code']:
+                self.write(rec1,rec)
+            # self.redirect('/FBAA')
+
+    def delete(self):
+        user = self.get_current_user()
+        activity = self.get_argument('activity')
+        res = Fijibook_MySQLdb().squareActivity(activity, user)
+        if res['code']:
+            self.write('square up failed!')
+
+class ChartHandler(BaseHandler):
+    def get(self):
+        user = self.get_current_user()
+        bill=Fijibook_MySQLdb().getTable(user)
+        if bill['code']==0:
+            self.render('charts.html', user=user, thead=['时间', '位置', '金额',  '大类', '小类', '备注'],
+                        tbody=bill['result'])
+        elif bill['code']==1:
+            self.write('Get bill failed!'+bill['result'])
+        elif bill['code']==2:
+            self.render('charts.html', user=user, thead=['时间', '位置', '金额',  '大类', '小类', '备注'],
+                        tbody=(('No Record!', '', '',  '', '', '', '', ''),))

@@ -15,7 +15,7 @@
 
 
 from handlers.WebService import indexHandler, loginHandler, LogoutHandler, MapHandler, \
-    JSMapHandler, registerHandler, POIHandler, VerificationImgHandler, RecordHandler
+    JSMapHandler, registerHandler, POIHandler, VerificationImgHandler, RecordHandler, FBAAHandler, FBAAIndexHandler, ChartHandler
 #
 # from handlers.WebService import indexHandler, loginHandler, LogoutHandler, MapHandler, JSMapHandler, registerHandler,
 
@@ -26,11 +26,13 @@ urls = [
     ('/logout', LogoutHandler),
     ('/index', indexHandler),
     ('/register', registerHandler),
-    ('/map', MapHandler),
-    ('/jsmap', JSMapHandler),
-    ('/poi', POIHandler),
-    ('/register', registerHandler),
+    # ('/map', MapHandler),
+    # ('/jsmap', JSMapHandler),
+    # ('/poi', POIHandler),
     ('/verificationimg', VerificationImgHandler),
     ('/record', RecordHandler),
+    ('/FBAA', FBAAHandler),
+    ('/FBAAIndex', FBAAIndexHandler),
+    ('/charts', ChartHandler),
     ]
 

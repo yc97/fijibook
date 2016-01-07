@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=1" />
+<link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="../static/css/jquery.tagsinput.css" />
+<link rel="stylesheet" type="text/css" href="../static/css/mysidebar.css" />
+
+<html>
+<head><title>FijiBook Charts</title></head>
+<body data-spy="scroll" data-target="#sidebar">
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar"></button>
+                <a class="navbar-brand" href="#">FijiBook</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/index">Home</a></li>
+                    <li><a href="/FBAAIndex">AA记账</a></li>
+                    <li class="active"><a href="#">账单</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a id="user" href="#user">{{user}}</a></li>
+                    <li class="active"><a href="/logout">注销</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="jumbotron" id="content" tabindex="-1">
+        <div class="container">
+            <!--<div class="container theme-showcase" role="main">-->
+            <div class="row">
+                <div class="col-md-12 col-xs-12">
+                    <!--<div class="jumbotron">-->
+                        <h1>账单详情</h1>
+                        <p>我的账单美美哒，快分享到朋友圈吧 ~</p>
+                    <!--</div>-->
+                </div>
+            </div>
+            <!--</div>-->
+        </div>
+    </div>
+    <div class="container">
+       <div class="row">
+           <div class="col-md-9 col-xs-12" role="main">
+               <!--总账单-->
+               <h1 id="allBill">总账单</h1>
+               <!--条形图-->
+               <h2 id="allBar">总账单条形图</h2>
+               <div id="allBarChart" style="height:700px"></div>
+               <!--圆饼图-->
+               <h2 id="allPie">总账单结构饼图</h2>
+               <h3>支出结构</h3>
+               <div id="allPieChart" style="height:500px"></div>
+               <h3>收入结构</h3>
+               <div id="allInPieChart" style="height:500px"></div>
+               <!--热力图-->
+               <h1 id="heat">热力图</h1>
+               <div id="maps" style="height:400px;width:100%"></div>
+
+               <!--总账单table-->
+               <h1 id="allTable">总账单详情</h1>
+               <!--<div class="table-responsive">-->
+                    <table class="table table-striped">
+                        <thead >
+                            <tr >
+                                {% for i in thead %}
+                                    <th >{{i}}</th>
+                                {% end %}
+                            </tr>
+                        </thead>
+                            {% for j in tbody %}
+                                <tbody id="recordsTb">
+                                    <tr>
+                                        {% for j1 in j[0:6] %}
+                                            <td>{{j1}}</td>
+                                        {% end %}
+                                        {% for j2 in j[6:8] %}
+                                            <td class="hidden">{{j2}}</td>
+                                        {% end %}
+                                    </tr>
+                                </tbody>
+                            {% end %}
+                    </table>
+                <!--</div>-->
+           </div>
+           <div class="col-md-3" role="complementary">
+                <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="sidebar">
+                    <ul class="nav bs-docs-sidenav">
+                        <!--<li class="active">-->
+                            <!--<a href="#">周账单</a>-->
+                                <!--<ul class="nav">-->
+                                    <!--<li class=""><a href="#">条形图：堆积+时间+旋风</a></li>-->
+                                    <!--<li class=""><a href="#">环形图：嵌套+时间</a></li>-->
+                                <!--</ul>-->
+                        <!--</li>-->
+                        <!--<li class="active">-->
+                            <!--<a href="#">月账单</a>-->
+                                <!--<ul class="nav">-->
+                                    <!--<li class=""><a href="#">条形图：堆积+时间+旋风</a></li>-->
+                                    <!--<li class=""><a href="#">环形图：嵌套+时间</a></li>-->
+                                <!--</ul>-->
+                        <!--</li>-->
+                        <li id="allBillSideBar" class="">
+                            <a href="#allBill">总账单</a>
+                                <ul class="nav">
+                                    <li class=""><a href="#allBar">条形图</a></li>
+                                    <li class=""><a href="#allPieChart">饼图-支出</a></li>
+                                    <li class=""><a href="#allInPieChart">饼图-收入</a></li>
+                                </ul>
+                        </li>
+                        <li class="">
+                            <a href="#heat">热力图</a>
+                        </li>
+                        <li class="">
+                            <a href="#allTable">详情列表</a>
+                        </li>
+                    </ul>
+                    <a class="back-to-top" href="#top">
+                      返回顶部
+                    </a>
+
+                </nav>
+            </div>
+
+       </div>
+        <hr />
+        <footer>
+            <p>© FijiBook 2016</p>
+        </footer>
+    </div>
+</body>
+<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
+<script src="../static/js/ajax-setup.js"></script>
+<script src="../static/js/ChartInit.js"></script>
+<script src="../static/js/heatmap.js"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=XGvfZRcqMC056a6GSpg81vIO"></script>
+<script type="text/javascript" src="http://api.map.baidu.com/library/Heatmap/2.0/src/Heatmap_min.js"></script>
+
+
+</html>
+
+<script type="text/javascript">
+    $(document).ready(function(){pageOnLoad();});
+    var allPieChart = echarts.init(document.getElementById('allPieChart'));
+    var allInPieChart = echarts.init(document.getElementById('allInPieChart'));
+    var allBarChart = echarts.init(document.getElementById('allBarChart'));
+
+    function pageOnLoad(){
+        //console.info($("tbody"));
+        //从表格中提取数据
+        var topData=GetTopData();
+        var subData=GetSubData();
+        var points=GetPoints();
+        //图表初始化
+        ChartInit();
+        MapInit([{"lng":116.418261,"lat":39.921984,"count":0}]);
+        if (subData.length!=0&&topData.length!=0&&points.length!=0)
+        {
+            //热力图展示
+            //console.info(points)
+            MapInit(points);
+            //数据转换1 pieChart
+            var subOut=new Array();
+            var subIn=new Array();
+            var legend=new Array();
+            var subLegend=new Array();
+            var yData=new Array();
+            var barData=new Array();
+            var barSeries;
+            legend.push('大类');
+            $.each(topData,function(i,item){
+                legend.push(item['name']);
+                yData.push(item['name']);
+            });
+            yData.push('收入');
+            legend.push('小类');
+            $.each(subData,function(i,item){
+                subLegend.push(item['name']);
+                //console.info(item)
+                if(item['value']<0){
+                    item['value']=-item['value'];
+                    subOut.push(item);
+                    legend.push(item['name']);
+                    item['value']=-item['value'];
+                }
+                else if(item['value']>0){
+                    subIn.push(item);
+                }
+            });
+            //数据转换2 barChart
+            var positionFlag=0;
+            var tmp=0;
+            console.info(topData)
+            $.each(topData,function(j,top){
+                var topFlag=0;
+                console.info(j);
+                for(i=tmp;i<subData.length;i++)
+                {
+                    tmp++;
+                    item=subData[i];
+                    if(item['value']<0){
+                        topFlag-=item['value'];
+                        console.info('topflag:'+topFlag);
+                        console.info('topvalue:'+top['value']);
+                        barSeries={
+                            name:item['name'],
+                            type:'bar',
+                            stack: '总量',
+                            itemStyle : { normal: {label : {show: true, position: 'insideLeft'}}},
+                            data:[]
+                        }
+                        for (k=0;k<positionFlag;k++){barSeries['data'].push(0);}
+                        barSeries['data'].push(-item['value']);
+                        for (k=positionFlag;k<yData.length-1;k++){barSeries['data'].push(0);}
+                        barData.push(barSeries);
+                        if (topFlag==top['value']){positionFlag++;break;}
+                    }
+                }
+            });
+            for(i=0;i<subData.length;i++)
+                {
+                    item=subData[i];
+                    if(item['value']>0){
+                        barSeries={
+                            name:item['name'],
+                            type:'bar',
+                            stack: '总量',
+                            itemStyle : { normal: {label : {show: true, position: 'insideLeft'}}},
+                            data:[]
+                        }
+                        for (k=0;k<yData.length-1;k++){barSeries['data'].push(0);}
+                        barSeries['data'].push(item['value']);
+                        barData.push(barSeries);
+                    }
+                }
+
+            //设置图表
+            allBarOption.legend['data']=subLegend;
+            allBarOption.yAxis[0]['data']=yData;
+            allBarOption.series=barData;
+            allBarChart.hideLoading();
+            allBarChart.setOption(allBarOption);
+
+
+            allPieoption.legend['data']=legend;
+            allPieoption.series[0]['data']=topData;
+            allPieoption.series[1]['data']=subOut;
+            allPieChart.hideLoading();
+            allPieChart.setOption(allPieoption);
+
+            allInPieOption.series[0]['data']=subIn;
+            allInPieChart.hideLoading();
+            allInPieChart.setOption(allInPieOption);
+        }
+    }
+</script>
+<script type="text/javascript">
+ //从表格中提取数据 topdata里面只有支出 subdata有支出也有收入
+    function GetTopData(){
+        var topData=new Array();
+        var j=0;
+        var exist;
+        $.each($("tbody").children(),function(i,tr){
+            exist=false;
+            td=$(tr).children();
+            //console.info(td);
+            time=td['0'].innerHTML;
+            if (time!=='No Record!')
+            {
+                mylocation=td['1'].innerHTML;
+                money=-Number(td['2'].innerHTML);
+                topType=td['3'].innerHTML;
+                subType=td['4'].innerHTML;
+                remark=td['5'].innerHTML;
+                //console.info(money)
+                $.each(topData,function(k,item){
+                    if(topType==item['name']){
+                        topData[k]['value']+=money;
+                        exist=true;
+                    }
+                });
+                if(!exist&&money>0){
+                    topData[j]={value:money, name:topType};
+                    //console.info(topData)
+                    //console.info(money)
+                    j++;
+                }
+            }
+        });
+        //console.info(topData)
+        return topData;
+    }
+
+    function GetSubData(){
+        var subData=new Array();
+        var insert=0;
+        var exist;
+        $.each($("tbody").children(),function(i,tr){
+            exist=false;
+            td=$(tr).children();
+            //console.info(td);
+            time=td['0'].innerHTML;
+            if (time!=='No Record!')
+            {
+                mylocation=td['1'].innerHTML;
+                money=Number(td['2'].innerHTML);
+                topType=td['3'].innerHTML;
+                subType=td['4'].innerHTML;
+                remark=td['5'].innerHTML;
+                lng=td['6'].innerHTML;
+                lat=td['7'].innerHTML;
+                $.each(subData,function(k,item){
+                    if(subType==item['name']){
+                        subData[k]['value']+=money;
+                        exist=true;
+                        insert=0;
+                        return false;
+                        //console.info(money)
+                    }
+                    else if(topType==item['topName']){
+                        insert=k+1;
+                        //console.info(item)
+                        //console.info({value:money, name:subType, topName:topType})
+                    }
+                });
+                if(!exist){
+                    if(insert!=0){
+                        subData.splice(insert,0,{value:money, name:subType, topName:topType});
+                        //console.info({value:money, name:subType, topName:topType})
+                        //console.info(insert)
+                        insert=0;
+                    }
+                    else {
+                        subData.push({value:money, name:subType, topName:topType});
+                    }
+                    //console.info(money)
+                    //console.info(subData)
+                }
+            }
+        });
+        //console.info(subData)
+        if (subData.length!=0)
+        {
+            $.each(subData,function(k,item){subData[k]={name:item['name'],value:item['value']}});
+        }
+        return subData;
+    }
+
+    function GetPoints(){
+        var points=new Array();
+        $.each($("tbody").children(),function(i,tr){
+            td=$(tr).children();
+            //console.info(td);
+            time=td['0'].innerHTML;
+            if (time!='No Record!')
+            {
+                money=Number(td['2'].innerHTML);
+                lng=td['6'].innerHTML;
+                lat=td['7'].innerHTML;
+                points.push({lng:lng,lat:lat,count:money});
+            }
+        });
+        return points;
+    }
+</script>

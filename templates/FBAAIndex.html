@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=1" />
+<link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="../static/css/jquery.tagsinput.css" />
+
+<html>
+<head><title>FijiBook for Friends</title></head>
+<body>
+    <nav class="navbar navbar-default navbar-static-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar"></button>
+                <a class="navbar-brand" href="#">FijiBook</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/index">Home</a></li>
+                    <li class="active"><a href="#">AA记账</a></li>
+                    <li><a href="/charts">账单</a></li>
+                    <!--<li><a href="#contact">Contact</a></li>-->
+                    <!--<li class="dropdown">-->
+                        <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>-->
+                        <!--<ul class="dropdown-menu">-->
+                            <!--<li><a href="#">Action</a></li>-->
+                            <!--<li role="separator" class="divider"></li>-->
+                            <!--<li class="dropdown-header">Nav header</li>-->
+                            <!--<li><a href="#">Separated link</a></li>-->
+                        <!--</ul>-->
+                    <!--</li>-->
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a id="user" href="#user">{{user}}</a></li>
+                    <li class="active"><a href="/logout">注销</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="jumbotron" id="content" tabindex="-1">
+        <div class="container">
+            <!--<div class="container theme-showcase" role="main">-->
+            <div class="row">
+                <div class="col-md-12 col-xs-12">
+                    <!--<div class="jumbotron">-->
+                        <h1> AA记账 </h1>
+                        <p> 聚会记账一目了然，一键获取结算方案~</p>
+                    <!--</div>-->
+                </div>
+            </div>
+            <!--</div>-->
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-xs-12">
+                <h2>已结束的活动</h2>
+                {% for i in endedAct %}
+                        <h3 name="actEd">{{i['name']}}</h3>
+                        <!--<span>参与者:</span>-->
+                        <span>{{i['friends']}}</span>
+                        <p><a name="actEd" class="btn btn-default" href="#" role="button">View details »</a></p>
+                {% end %}
+            </div>
+            <div class="col-md-4 col-xs-12">
+                <h2>进行中的活动</h2>
+                    {% for i in actingAct %}
+                        <h3 name="actIng">{{i['name']}}</h3>
+                        <!--<span>参与者:</span>-->
+                        <span>{{i['friends']}}</span>
+                        <p><a name="actIng" class="btn btn-default" href="#" role="button">View details »</a></p>
+                    {% end %}
+            </div>
+            <div class="col-md-4 col-xs-12">
+                <h2>创建新的活动</h2>
+                <h3>现在就开始创建一个新的活动吧~</h3>
+                <p><a class="btn btn-default" href="/FBAA?activity=new" role="button">Create Activity »</a></p>
+            </div>
+        </div>
+        <hr />
+        <footer>
+            <p>© FijiBook 2016</p>
+        </footer>
+    </div>
+</body>
+
+
+<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function(){pageOnLoad();});
+    function pageOnLoad(){
+        actEd=$("h3[name='actEd']");
+        aEd=$("a[name='actEd']");
+        $.each(actEd,function(i,actName){
+            $(aEd[i]).attr('href','/FBAA?activity='+$(actName).text());
+            //console.info($(actName).text())
+        });
+        actIng=$("h3[name='actIng']");
+        aIng=$("a[name='actIng']");
+        $.each(actIng,function(i,actName){
+            $(aIng[i]).attr('href','/FBAA?activity='+$(actName).text());
+            //console.info($(actName).text())
+        });
+    }
+</script>
+
+</html>
+
+
+
+
+
+
