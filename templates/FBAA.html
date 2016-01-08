@@ -612,7 +612,7 @@ function saveActivity(){
                                 if (balanceSorted[i]['data']+balanceSorted[j]['data']>0)
                                     {   //console.info(balanceSorted[i]['data'],balanceSorted[j]['data'])
                                         $("#balanceList").append("<h4><li class='list-group-item'><span class='label label-success'>"
-                                            +balanceSorted[j]['friend']+"</span>应该支付给<span class='label label-info'>"
+                                            +balanceSorted[j]['friend']+"</span>应给<span class='label label-info'>"
                                             +balanceSorted[i]['friend']+"</span><span class='label label-danger'>"
                                             +(-balanceSorted[j]['data']).toFixed(2)+"</span>元</li></h4>");
                                         //console.info(balanceSorted[j]['friend']+'应该给'+balanceSorted[i]['friend']+(-balanceSorted[j]['data']).toFixed(2)+'元');
@@ -623,7 +623,7 @@ function saveActivity(){
                                 else
                                     {
                                         $("#balanceList").append("<h4><li class='list-group-item'><span class='label label-success'>"
-                                            +balanceSorted[j]['friend']+"</span>应该支付给<span class='label label-info'>"
+                                            +balanceSorted[j]['friend']+"</span>应给<span class='label label-info'>"
                                             +balanceSorted[i]['friend']+"</span><span class='label label-danger'>"
                                             +(balanceSorted[i]['data']).toFixed(2)+"</span>元</li></h4>");
                                         //console.info(balanceSorted[j]['friend']+'应该给'+balanceSorted[i]['friend']+(balanceSorted[i]['data']).toFixed(2)+'元');

@@ -98,7 +98,7 @@ class Fijibook_MySQLdb(MySQLDatabase):
     def getTable(self, user):
         # usertable = 'balance'
         try:
-            cmd = "select b.time,SUBSTRING_INDEX(b.location, ',', -1),b.money,t.toptype,b.type,b.remark, b.lng,b.lat FROM balance b,type t where b.type=t.subtype and b.user='%s'and b.AA=0 ORDER BY b.TIME DESC" % (user)
+            cmd = "select b.time,CONCAT_WS(',',SUBSTRING_INDEX(SUBSTRING_INDEX(b.location, ',', 2),',',-1),SUBSTRING_INDEX(b.location, ',', -1)),b.money,t.toptype,b.type,b.remark, b.lng,b.lat FROM balance b,type t where b.type=t.subtype and b.user='%s'and b.AA=0 ORDER BY b.TIME DESC" % (user)
             return self.execute(cmd)
         except e:
             return {'code': 1, 'result': 'error', 'info': 'Error! From getTable: ' + e.message}
@@ -121,7 +121,7 @@ class Fijibook_MySQLdb(MySQLDatabase):
         return self.execute(cmd)
 
     def getRecord(self, user, mydate):
-        cmd = "SELECT DATE_FORMAT(TIME,'%%T') time24,SUBSTRING_INDEX(location, ',', -1),money,TYPE,remark FROM balance " \
+        cmd = "SELECT DATE_FORMAT(TIME,'%%T') time24,CONCAT_WS(',',SUBSTRING_INDEX(SUBSTRING_INDEX(location, ',', 2),',',-1),SUBSTRING_INDEX(location, ',', -1)),money,TYPE,remark FROM balance " \
               "WHERE `TIME` >= '%s 00:00:00'AND `TIME` < DATE_ADD('%s',INTERVAL '1' day) AND `user` ='%s' and AA=0 ORDER BY TIME ASC"% (mydate, mydate, user)
         return self.execute(cmd)
 

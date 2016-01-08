@@ -153,9 +153,10 @@
     function pageOnLoad(){
         //console.info($("tbody"));
         //从表格中提取数据
-        var topData=GetTopData();
-        var subData=GetSubData();
-        var points=GetPoints();
+        var trs=$("tbody");
+        var topData=GetTopData(trs);
+        var subData=GetSubData(trs);
+        var points=GetPoints(trs);
         //图表初始化
         ChartInit();
         MapInit([{"lng":116.418261,"lat":39.921984,"count":0}]);
@@ -261,11 +262,11 @@
 </script>
 <script type="text/javascript">
  //从表格中提取数据 topdata里面只有支出 subdata有支出也有收入
-    function GetTopData(){
+    function GetTopData(trs){
         var topData=new Array();
         var j=0;
         var exist;
-        $.each($("tbody").children(),function(i,tr){
+        $.each($(trs).children(),function(i,tr){
             exist=false;
             td=$(tr).children();
             //console.info(td);
@@ -296,11 +297,11 @@
         return topData;
     }
 
-    function GetSubData(){
+    function GetSubData(trs){
         var subData=new Array();
         var insert=0;
         var exist;
-        $.each($("tbody").children(),function(i,tr){
+        $.each($(trs).children(),function(i,tr){
             exist=false;
             td=$(tr).children();
             //console.info(td);
@@ -351,9 +352,9 @@
         return subData;
     }
 
-    function GetPoints(){
+    function GetPoints(trs){
         var points=new Array();
-        $.each($("tbody").children(),function(i,tr){
+        $.each($(trs).children(),function(i,tr){
             td=$(tr).children();
             //console.info(td);
             time=td['0'].innerHTML;
