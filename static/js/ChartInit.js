@@ -3,6 +3,9 @@ function ChartInit(){
         allPieChart.setOption(allPieoption);
         allInPieChart.setOption(allInPieOption);
         allBarChart.setOption(allBarOption);
+        allBarChart.setOption(allBarOption);
+        monthPieChart.setOption(monthPieOption);
+        monthInPieChart.setOption(monthInPieOption);
 }
 
 allPieoption = {
@@ -22,21 +25,21 @@ allPieoption = {
                 data:['']
             },
             toolbox: {
-                orient : 'vertical',
-                x : 'right',
-                y : 'bottom',
-                show : true,
-                feature : {
-                    mark : {show: true},
-                    dataView : {show: true, readOnly: true},
-//                    magicType : {
-//                        show: true,
-//                        type: ['pie', 'funnel']
-//                    },
-                    restore : {show: true},
-                    saveAsImage : {show: true}
-                }
-            },
+        orient : 'vertical',
+        x : 'right',
+        y : 'bottom',
+        show : true,
+        feature : {
+            mark : {show: true},
+            dataView : {show: true, readOnly: false},
+//            magicType : {
+//                show: true,
+//                type: ['pie', 'funnel']
+//            },
+            restore : {show: true},
+            saveAsImage : {show: true}
+        }
+    },
             calculable : false,
             series : [
                 {
@@ -44,8 +47,6 @@ allPieoption = {
                     type:'pie',
                     selectedMode: 'single',
                     radius : [0, 70],
-
-
                     itemStyle : {
                         normal : {
                             label : {
@@ -69,6 +70,27 @@ allPieoption = {
                     name:'消费小类',
                     type:'pie',
                     radius : [90, 130],
+                    itemStyle : {
+                        normal : {
+                            label : {
+                                formatter: function (params) {
+                                    var res=params.name+' ('+params.value+')';
+                                    return res;
+                                },
+                            },
+                            labelLine : {
+                                show : true,
+                            },
+                        },
+                        emphasis: {
+                            label: {
+                                show: false,
+                            },
+                            labelLine : {
+                                show : false,
+                            },
+                        }
+                    },
                     data:[
                        // {value:1, name:'一日三餐'},
 //                        {value:1, name:'地铁公交'},
@@ -77,7 +99,7 @@ allPieoption = {
 //                        {value:1, name:'人际往来'},
 //                        {value:1, name:'租房租车'},
                     ]
-                },
+                }
             ]
 };
 
@@ -121,6 +143,27 @@ allInPieOption = {
             radius : [30, 110],
             center : ['50%', 200],
             roseType : 'radius',
+            itemStyle : {
+                        normal : {
+                            label : {
+                                formatter: function (params) {
+                                    var res=params.name+' ('+params.value+')';
+                                    return res;
+                                },
+                            },
+                            labelLine : {
+                                show : true,
+                            },
+                        },
+                        emphasis: {
+                            label: {
+                                show: false,
+                            },
+                            labelLine : {
+                                show : false,
+                            },
+                        }
+                    },
             data:[
                 //{value:10, name:'rose1'},
             ]
@@ -191,16 +234,10 @@ allBarOption = {
     ]
 };
 
-
-
-var idx = 1;
-option = {
+monthPieOption = {
     timeline : {
         data : [
-            '2013-01-01', '2013-02-01', '2013-03-01', '2013-04-01', '2013-05-01',
-            { name:'2013-06-01', symbol:'emptyStar6', symbolSize:8 },
-            '2013-07-01', '2013-08-01', '2013-09-01', '2013-10-01', '2013-11-01',
-            { name:'2013-12-01', symbol:'star6', symbolSize:8 }
+            '1990-01-01', '1990-01-01'
         ],
         label : {
             formatter : function(s) {
@@ -210,207 +247,173 @@ option = {
     },
     options : [
         {
-//            title : {
-//                text: '浏览器占比变化',
-//                subtext: '纯属虚构'
-//            },
             tooltip : {
                 trigger: 'item',
                 formatter: "{a} <br/>{b} : {c} ({d}%)"
             },
             legend: {
-                data:['Chrome','Firefox','Safari','IE9+','IE8-']
+                data:[]
             },
             toolbox: {
+                orient : 'vertical',
+                x : 'right',
+                y : 'bottom',
                 show : true,
                 feature : {
                     mark : {show: true},
                     dataView : {show: true, readOnly: false},
+        //            magicType : {
+        //                show: true,
+        //                type: ['pie', 'funnel']
+        //            },
                     restore : {show: true},
                     saveAsImage : {show: true}
                 }
             },
             series : [
                 {
-                    name:'浏览器（数据纯属虚构）',
+                    name:'消费大类',
                     type:'pie',
-                    center: ['50%', '45%'],
-                    radius: '50%',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
+                    selectedMode: 'single',
+                    radius : [0, 70],
+                    itemStyle : {
+                        normal : {
+                            label : {
+                                position : 'inner',
+                                formatter: function (params) {
+                                    var res = params.name;
+                                    if (params.value==0)
+                                    {res=''}
+                                    else
+                                    {res=params.name;}
+                                    return res;
+                                },
+                            },
+                            labelLine : {
+                                show : false
+                            }
+                        }
+                    },
+                    data:[]
+                },
                 {
-                    name:'浏览器（数据纯属虚构）',
+                    name:'消费小类',
                     type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
-                {
-                    name:'浏览器（数据纯属虚构）',
-                    type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
-                {
-                    name:'浏览器（数据纯属虚构）',
-                    type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
-                {
-                    name:'浏览器（数据纯属虚构）',
-                    type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
-                {
-                    name:'浏览器（数据纯属虚构）',
-                    type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
-                {
-                    name:'浏览器（数据纯属虚构）',
-                    type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
-                {
-                    name:'浏览器（数据纯属虚构）',
-                    type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
-                {
-                    name:'浏览器（数据纯属虚构）',
-                    type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
-                {
-                    name:'浏览器（数据纯属虚构）',
-                    type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
-                {
-                    name:'浏览器（数据纯属虚构）',
-                    type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
-                }
-            ]
-        },
-        {
-            series : [
-                {
-                    name:'浏览器（数据纯属虚构）',
-                    type:'pie',
-                    data:[
-                        {value: idx * 128 + 80,  name:'Chrome'},
-                        {value: idx * 64  + 160,  name:'Firefox'},
-                        {value: idx * 32  + 320,  name:'Safari'},
-                        {value: idx * 16  + 640,  name:'IE9+'},
-                        {value: idx++ * 8  + 1280, name:'IE8-'}
-                    ]
+                    radius : [90, 130],
+                    itemStyle : {
+                        normal : {
+                            label : {
+                                formatter: function (params) {
+                                    var res = params.name;
+                                    if (params.value==0)
+                                    {res=''}
+                                    else
+                                    {res=params.name+' ('+params.value+')';}
+                                    return res;
+                                },
+                            },
+                            labelLine : {
+                                show : false,
+                            },
+                        },
+                        emphasis: {
+                            label: {
+                                show: false,
+                            },
+                        }
+                    },
+                    data:[]
                 }
             ]
         }
+//        {
+//            series : [
+//                {
+//                    name:'浏览器（数据纯属虚构）',
+//                    type:'pie',
+//                    data:[]
+//                }
+//            ]
+//        }
     ]
 };
+
+monthInPieOption = {
+    timeline : {
+        data : [
+            '1990-01-01', '1990-01-01'
+        ],
+        label : {
+            formatter : function(s) {
+                return s.slice(0, 7);
+            }
+        }
+    },
+    options : [
+        {
+            tooltip : {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: {
+                data:['工资','奖金','补助津贴','公务报销','投资收益']
+            },
+            toolbox: {
+                orient : 'vertical',
+                x : 'right',
+                y : 'bottom',
+                show : true,
+                feature : {
+                    mark : {show: true},
+                    dataView : {show: true, readOnly: false},
+        //            magicType : {
+        //                show: true,
+        //                type: ['pie', 'funnel']
+        //            },
+                    restore : {show: true},
+                    saveAsImage : {show: true}
+                }
+            },
+            series : [
+                {
+                    name:'收入',
+                    type:'pie',
+                    selectedMode: 'single',
+                    radius : [30, 110],
+                    center : ['50%', 200],
+                    roseType : 'radius',
+                    itemStyle : {
+                        normal : {
+                            label : {
+                                position : 'outer',
+                                formatter: function (params) {
+                                    var res = params.name;
+                                    if (params.value==0)
+                                    {res=''}
+                                    else
+                                    {res=params.name+' ('+params.value+')';}
+                                    return res;
+                                },
+                            },
+                            labelLine : {
+                                show : false
+                            }
+                        }
+                    },
+                    data:[]
+                }
+            ]
+        }
+//        {
+//            series : [
+//                {
+//                    name:'浏览器（数据纯属虚构）',
+//                    type:'pie',
+//                    data:[]
+//                }
+//            ]
+//        }
+    ]
+};
+
 

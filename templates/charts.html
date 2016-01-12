@@ -45,6 +45,18 @@
     <div class="container">
        <div class="row">
            <div class="col-md-9 col-xs-12" role="main">
+               <!--月账单-->
+               <h1 id="monthBill">月账单</h1>
+               <!--条形图-->
+               <!--<h2 id="monthBar">月账单条形图</h2>-->
+               <!--<div id="monthBarChart" style="height:700px"></div>-->
+               <!--圆饼图-->
+               <h2 id="monthPie">月账单结构饼图</h2>
+               <h3>支出结构</h3>
+               <div id="monthPieChart" style="height:500px"></div>
+               <h3>收入结构</h3>
+               <div id="monthInPieChart" style="height:500px"></div>
+
                <!--总账单-->
                <h1 id="allBill">总账单</h1>
                <!--条形图-->
@@ -103,6 +115,14 @@
                                     <!--<li class=""><a href="#">环形图：嵌套+时间</a></li>-->
                                 <!--</ul>-->
                         <!--</li>-->
+                        <li id="monthBillSideBar" class="">
+                            <a href="#monthBill">月账单</a>
+                                <ul class="nav">
+                                    <!--<li class=""><a href="#monthBar">条形图</a></li>-->
+                                    <li class=""><a href="#monthPieChart">饼图-支出</a></li>
+                                    <li class=""><a href="#monthInPieChart">饼图-收入</a></li>
+                                </ul>
+                        </li>
                         <li id="allBillSideBar" class="">
                             <a href="#allBill">总账单</a>
                                 <ul class="nav">
@@ -128,7 +148,7 @@
        </div>
         <hr />
         <footer>
-            <p>© FijiBook 2016</p>
+            <p>FijiBook 2016</p>
         </footer>
     </div>
 </body>
@@ -149,11 +169,13 @@
     var allPieChart = echarts.init(document.getElementById('allPieChart'));
     var allInPieChart = echarts.init(document.getElementById('allInPieChart'));
     var allBarChart = echarts.init(document.getElementById('allBarChart'));
+    var monthPieChart = echarts.init(document.getElementById('monthPieChart'));
+    var monthInPieChart = echarts.init(document.getElementById('monthInPieChart'));
 
     function pageOnLoad(){
         //console.info($("tbody"));
         //从表格中提取数据
-        var trs=$("tbody");
+        var trs=$("tbody").children();
         var topData=GetTopData(trs);
         var subData=GetSubData(trs);
         var points=GetPoints(trs);
@@ -165,89 +187,22 @@
             //热力图展示
             //console.info(points)
             MapInit(points);
-            //数据转换1 pieChart
-            var subOut=new Array();
-            var subIn=new Array();
-            var legend=new Array();
-            var subLegend=new Array();
-            var yData=new Array();
-            var barData=new Array();
-            var barSeries;
-            legend.push('大类');
-            $.each(topData,function(i,item){
-                legend.push(item['name']);
-                yData.push(item['name']);
-            });
-            yData.push('收入');
-            legend.push('小类');
-            $.each(subData,function(i,item){
-                subLegend.push(item['name']);
-                //console.info(item)
-                if(item['value']<0){
-                    item['value']=-item['value'];
-                    subOut.push(item);
-                    legend.push(item['name']);
-                    item['value']=-item['value'];
-                }
-                else if(item['value']>0){
-                    subIn.push(item);
-                }
-            });
-            //数据转换2 barChart
-            var positionFlag=0;
-            var tmp=0;
-            console.info(topData)
-            $.each(topData,function(j,top){
-                var topFlag=0;
-                console.info(j);
-                for(i=tmp;i<subData.length;i++)
-                {
-                    tmp++;
-                    item=subData[i];
-                    if(item['value']<0){
-                        topFlag-=item['value'];
-                        console.info('topflag:'+topFlag);
-                        console.info('topvalue:'+top['value']);
-                        barSeries={
-                            name:item['name'],
-                            type:'bar',
-                            stack: '总量',
-                            itemStyle : { normal: {label : {show: true, position: 'insideLeft'}}},
-                            data:[]
-                        }
-                        for (k=0;k<positionFlag;k++){barSeries['data'].push(0);}
-                        barSeries['data'].push(-item['value']);
-                        for (k=positionFlag;k<yData.length-1;k++){barSeries['data'].push(0);}
-                        barData.push(barSeries);
-                        if (topFlag==top['value']){positionFlag++;break;}
-                    }
-                }
-            });
-            for(i=0;i<subData.length;i++)
-                {
-                    item=subData[i];
-                    if(item['value']>0){
-                        barSeries={
-                            name:item['name'],
-                            type:'bar',
-                            stack: '总量',
-                            itemStyle : { normal: {label : {show: true, position: 'insideLeft'}}},
-                            data:[]
-                        }
-                        for (k=0;k<yData.length-1;k++){barSeries['data'].push(0);}
-                        barSeries['data'].push(item['value']);
-                        barData.push(barSeries);
-                    }
-                }
 
             //设置图表
+            var barTmp=GetBarData(topData,subData);
+            barData=barTmp[0];
+            yData=barTmp[1];
+            subLegend=barTmp[2];
             allBarOption.legend['data']=subLegend;
             allBarOption.yAxis[0]['data']=yData;
             allBarOption.series=barData;
             allBarChart.hideLoading();
             allBarChart.setOption(allBarOption);
 
-
+            var pieTmp=GetPieData(topData,subData);
+            subOut=pieTmp[0];
+            subIn=pieTmp[1];
+            legend=pieTmp[2];
             allPieoption.legend['data']=legend;
             allPieoption.series[0]['data']=topData;
             allPieoption.series[1]['data']=subOut;
@@ -257,16 +212,27 @@
             allInPieOption.series[0]['data']=subIn;
             allInPieChart.hideLoading();
             allInPieChart.setOption(allInPieOption);
+
+            var timeLineTmp=CreateTimeLineTrs(trs);
+            timeLine=timeLineTmp[0].reverse();
+            timeLineTrs=timeLineTmp[1].reverse();
+            //console.info(timeLineTrs,timeLine);
+            SetMonthPieOption(timeLine,timeLineTrs,legend);
+            monthPieChart.hideLoading();
+            //console.info(monthPieOption);
+            monthPieChart.setOption(monthPieOption);
+            monthInPieChart.hideLoading();
+            monthInPieChart.setOption(monthInPieOption);
         }
     }
 </script>
+<!-- //从表格中提取数据 topdata里面只有支出 subdata有支出也有收入-->
 <script type="text/javascript">
- //从表格中提取数据 topdata里面只有支出 subdata有支出也有收入
     function GetTopData(trs){
         var topData=new Array();
         var j=0;
         var exist;
-        $.each($(trs).children(),function(i,tr){
+        $.each(trs,function(i,tr){
             exist=false;
             td=$(tr).children();
             //console.info(td);
@@ -301,7 +267,7 @@
         var subData=new Array();
         var insert=0;
         var exist;
-        $.each($(trs).children(),function(i,tr){
+        $.each(trs,function(i,tr){
             exist=false;
             td=$(tr).children();
             //console.info(td);
@@ -354,7 +320,7 @@
 
     function GetPoints(trs){
         var points=new Array();
-        $.each($(trs).children(),function(i,tr){
+        $.each(trs,function(i,tr){
             td=$(tr).children();
             //console.info(td);
             time=td['0'].innerHTML;
@@ -367,5 +333,197 @@
             }
         });
         return points;
+    }
+</script>
+ <!--topdata subdata数据转换-->
+<script type="text/javascript">
+    //数据转换1 pieChart
+    function GetPieData(topData,subData){
+        var subOut=new Array();
+        var subIn=new Array();
+        var legend=new Array();
+        legend.push('大类');
+        $.each(topData,function(i,item){
+            legend.push(item['name']);
+        });
+        legend.push('小类');
+        $.each(subData,function(i,item){
+            //console.info(item)
+            if(item['value']<0){
+                subOut.push({name:item['name'],value:-item['value']});
+                legend.push(item['name']);
+            }
+            else if(item['value']>0){
+                subIn.push(item);
+            }
+        });
+        return [subOut,subIn,legend];
+    }
+
+    //数据转换2 barChart
+    function GetBarData(topData,subData){
+        var barData=new Array();
+        var subLegend=new Array();
+        var yData=new Array();
+        var barSeries;
+        var positionFlag=0;
+        var tmp=0;
+        //console.info(topData)
+        $.each(topData,function(i,item){
+            yData.push(item['name']);
+        });
+        yData.push('收入');
+        $.each(topData,function(j,top){
+            var topFlag=0;
+            //console.info(j);
+            for(i=tmp;i<subData.length;i++)
+            {
+                tmp++;
+                item=subData[i];
+                if(item['value']<0){
+                    topFlag-=item['value'];
+                    //console.info('topflag:'+topFlag);
+                    //console.info('topvalue:'+top['value']);
+                    barSeries={
+                        name:item['name'],
+                        type:'bar',
+                        stack: '总量',
+                        itemStyle : { normal: {label : {show: true, position: 'insideLeft'}}},
+                        data:[]
+                    }
+                    for (k=0;k<positionFlag;k++){barSeries['data'].push(0);}
+                    barSeries['data'].push(-item['value']);
+                    for (k=positionFlag;k<yData.length-1;k++){barSeries['data'].push(0);}
+                    barData.push(barSeries);
+                    if (topFlag==top['value']){positionFlag++;break;}
+                }
+            }
+        });
+        for(i=0;i<subData.length;i++)
+            {
+                item=subData[i];
+                subLegend.push(item['name']);
+                if(item['value']>0){
+                    barSeries={
+                        name:item['name'],
+                        type:'bar',
+                        stack: '总量',
+                        itemStyle : { normal: {label : {show: true, position: 'insideLeft'}}},
+                        data:[]
+                    }
+                    for (k=0;k<yData.length-1;k++){barSeries['data'].push(0);}
+                    barSeries['data'].push(item['value']);
+                    barData.push(barSeries);
+                }
+            }
+        return [barData,yData,subLegend];
+    }
+</script>
+<!-- 创建时间线数组-->
+<script type="text/javascript">
+    function CreateTimeLineTrs(trs){
+        var timeLineTrs=new Array();
+        var timeLine=new Array();
+        var trsTmp=new Array();
+        var dateTmp="1990-01-01";
+        var j=-1;
+        //timeLineTrs[0]=new Array();
+        //将trs按月分组（trs是按时间排序的）
+        $.each(trs,function(i,tr){
+            td=$(tr).children();
+            dateTimeStr=td['0'].innerHTML;
+            dateStr=dateTimeStr.slice(0,7);
+            if (Date.parse(dateStr)!=Date.parse(dateTmp))
+            {
+                j++;
+                timeLine[j]=dateStr+'-01';
+                timeLineTrs[j]=new Array();
+                dateTmp=dateStr;
+            }
+            timeLineTrs[j].push(tr);
+        });
+        return [timeLine,timeLineTrs];
+    }
+
+    function SetMonthPieOption(timeLine,timeLineTrs,legend){
+        monthPieOption.timeline['data']=timeLine;
+        monthInPieOption.timeline['data']=timeLine;
+        var topTmp=new Array();
+        var subOutTmp=new Array();
+        var subInTmp=new Array();
+        var flag=false;
+        $.each(timeLineTrs,function(i,trs){
+            topDataTL=GetTopData(trs);
+            subDataTL=GetSubData(trs);
+            pieTmp=GetPieData(topDataTL,subDataTL);
+            subOutTL=pieTmp[0];
+            subInTL=pieTmp[1];
+            topLength=topDataTL.length;
+            subOutLength=subOutTL.length;
+            subInLength=subInTL.length;
+            if (i==0){
+                topTmp=topDataTL;
+                subOutTmp=subOutTL;
+                subInTmp=subInTL;
+                monthPieOption.options[0].legend['data']=legend;
+                //monthInPieOption.options[0].legend['data']=legend;
+                monthPieOption.options[0].series[0]['data']=topDataTL;
+                monthPieOption.options[0].series[1]['data']=subOutTL;
+                monthInPieOption.options[0].series[0]['data']=subInTL;
+            }
+            else {
+                $.each(topTmp,function(i,top){
+                    flag=false;
+                    for(j=0;j<topLength;j++){
+                         if (topDataTL[j]['name']==top['name']){
+                            flag=true;
+                        }
+                    }
+                    if(flag==false){
+                        topDataTL.push({name:top['name'],value:0});
+                    }
+                });
+                $.each(subOutTmp,function(i,sub){
+                    flag=false;
+                    for(j=0;j<subOutLength;j++){
+                         if (subOutTL[j]['name']==sub['name']){
+                            flag=true;
+                        }
+                    }
+                    if(flag==false){
+                        subOutTL.push({name:sub['name'],value:0});
+                    }
+                });
+                $.each(subInTmp,function(i,sub){
+                    flag=false;
+                    for(j=0;j<subInLength;j++){
+                         if (subInTL[j]['name']==sub['name']){
+                            flag=true;
+                        }
+                    }
+                    if(flag==false){
+                        subInTL.push({name:sub['name'],value:0});
+                    }
+                });
+                monthPieOption.options.push(
+                    {
+                        series:[
+                            {name:'消费大类',type:'pie',data:topDataTL},
+                            {name:'消费小类',type:'pie',data:subOutTL}
+                        ]
+                    }
+                );
+                monthInPieOption.options.push(
+                    {
+                        series:[
+                            {name:'收入',type:'pie',data:subInTL},
+                        ]
+                    }
+                );
+                topTmp=topDataTL;
+                subOutTmp=subOutTL;
+                subInTmp=subInTL;
+            }
+        });
     }
 </script>
