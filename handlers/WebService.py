@@ -18,6 +18,8 @@ class indexHandler(BaseHandler):
         print user, 'login at', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         sys.stdout.flush()
         today = datetime.datetime.now().strftime('%Y-%m-%d')
+        time = datetime.datetime.now().strftime('%H:%M:%S')
+        time = ' '+time
         recSumRec = Fijibook_MySQLdb().getUserRecSum(user)
         userSumRec = Fijibook_MySQLdb().getUserSum()
         newTimeRec = Fijibook_MySQLdb().getNewestRecTime(user)
@@ -30,9 +32,9 @@ class indexHandler(BaseHandler):
         monthOut=Fijibook_MySQLdb().getMonthOutSum(user)
         # tableRec = Fijibook_MySQLdb().getTable()
         if recSumRec['code'] or userSumRec['code'] or newTimeRec['code'] or expenseTypesRec['code'] or incomeTypesRec['code']:
-            self.render('bootstrap_test.html', user=user, recSum=0,
+            self.render('index.html', user=user, recSum=0,
                         userSum=-1, newTime=-1,
-                        thead=['时间', '位置', '金额',  '分类', '备注'],today=today,
+                        thead=['时间', '位置', '金额',  '分类', '备注'],today=today, time=time,
                         tbody=[], expensebody=expenseTypesRec['result'], incomebody=incomeTypesRec['result'],
                         todayIn=todayIn['result'][0][0], todayOut=todayOut['result'][0][0], monthIn=monthIn['result'][0][0], monthOut=monthOut['result'][0][0])
             print('Table is empty. Or error getting recSum or userSum or newTime or table. \
@@ -43,9 +45,9 @@ class indexHandler(BaseHandler):
                 tbody = tableRec['result']
             except KeyError:
                 tbody = (('No record. Please add ', ' ', ' ', ' ', ' '), )
-            self.render('bootstrap_test.html', user=user, recSum=recSumRec['result'][0][0],
+            self.render('index.html', user=user, recSum=recSumRec['result'][0][0],
                         userSum=userSumRec['result'][0][0], newTime=newTimeRec['result'][0][0],
-                        today=today,
+                        today=today, time=time,
                         thead=['时间', '位置', '金额',  '分类', '备注'],
                         tbody=tbody,
                         expensebody=expenseTypesRec['result'],
@@ -55,6 +57,7 @@ class indexHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         user = self.get_secure_cookie('user')
+        time = self.get_argument('time')
         money = self.get_argument('money')
         location = self.get_argument('inputLocation')
         remark = self.get_argument('remark')
@@ -64,7 +67,7 @@ class indexHandler(BaseHandler):
             money = -float(money)
         lng = self.get_argument('lng')
         lat = self.get_argument('lat')
-        rec = Fijibook_MySQLdb().saveBalance(user=user, money=money, location=location, remark=remark, type=type, lng=lng, lat=lat)
+        rec = Fijibook_MySQLdb().saveBalance(user=user, time=time, money=money, location=location, remark=remark, type=type, lng=lng, lat=lat)
         if rec['code']:
             self.write(rec)
         self.redirect('/index')
@@ -154,13 +157,26 @@ class RecordHandler(BaseHandler):
     def get(self):
         mydate = self.get_argument('myDate')
         user = self.get_current_user()
+        # today = datetime.datetime.now().strftime('%Y-%m-%d')
+        time = datetime.datetime.now().strftime('%H:%M:%S')
         #print mydate, user
         recordRec = Fijibook_MySQLdb().getRecord(user, mydate)
+        todayIn=0
+        todayOut=0
         try:
             record = recordRec['result']
+            for each in recordRec['result']:
+                if each[2]>0:
+                    todayIn = todayIn + each[2]
+                elif each[2]<0:
+                    todayOut = todayOut + each[2]
+            # print todayOut, todayIn
         except KeyError:
             record = (('No record. Please add ', ' ', ' ', ' ', ' '), )
-        recordJson = json.dumps(record)
+
+
+        recordTmp = {'todayIn': todayIn, 'todayOut' : todayOut, 'record': record, 'time' : time}
+        recordJson = json.dumps(recordTmp)
         self.write(recordJson)
 
     def post(self):
@@ -186,6 +202,7 @@ class RecordHandler(BaseHandler):
         if res['code']:
             self.write('delete record failed!')
 class FBAAIndexHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         user = self.get_current_user()
         sys.stdout.flush()
@@ -208,6 +225,7 @@ class FBAAIndexHandler(BaseHandler):
             self.render('FBAAIndex.html', user=user, actingAct=actingAct, endedAct=endedAct)
 
 class FBAAHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         user = self.get_current_user()
         expenseTypesRec = Fijibook_MySQLdb().getExpenseTypes(user)
@@ -230,7 +248,7 @@ class FBAAHandler(BaseHandler):
                             thead=['时间', '位置', '金额', '活动', '参与者', '付款人', '分类', '备注'],
                                 expensebody=expenseTypesRec['result'],
                                 incomebody=incomeTypesRec['result'],)
-
+    @tornado.web.authenticated
     def post(self):
         user = self.get_current_user()
         activity = self.get_argument('activity')
@@ -252,7 +270,7 @@ class FBAAHandler(BaseHandler):
             if rec1['code'] or rec['code']:
                 self.write(rec1,rec)
             # self.redirect('/FBAA')
-
+    @tornado.web.authenticated
     def delete(self):
         user = self.get_current_user()
         activity = self.get_argument('activity')
@@ -261,6 +279,7 @@ class FBAAHandler(BaseHandler):
             self.write('square up failed!')
 
 class ChartHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         user = self.get_current_user()
         bill=Fijibook_MySQLdb().getTable(user)

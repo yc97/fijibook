@@ -18,11 +18,11 @@ class Fijibook_MySQLdb(MySQLDatabase):
         cmd = "select money from %s where user = '%s' and AA=0" % (usertable, user)
         return self.execute(cmd)
 
-    def saveBalance(self, user, money, location='', remark='', type='', lng='', lat=''):
+    def saveBalance(self, user, time, money, location='', remark='', type='', lng='', lat=''):
         usertable = 'balance'
         cmd1 = "insert into %s (`user`, `money`, `time`, `location`, `remark`, `type`, `lng`, `lat`, `AA`) \
-                values('%s', %f, now(), '%s', '%s', '%s', '%s', '%s',0)" \
-               % (usertable, user, float(money), location, remark, type, lng, lat)
+                values('%s', %f, '%s', '%s', '%s', '%s', '%s', '%s',0)" \
+               % (usertable, user, float(money), time, location, remark, type, lng, lat)
         rec = self.execute(cmd1)
         self.db.commit()
         return rec
