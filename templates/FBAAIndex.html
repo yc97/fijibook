@@ -55,26 +55,30 @@
         <div class="row">
             <div class="col-md-4 col-xs-12">
                 <h2>已结束的活动</h2>
-                {% for i in endedAct %}
+                <div name="actDetail">
+                    {% for i in endedAct %}
                         <h3 name="actEd">{{i['name']}}</h3>
-                        <!--<span>参与者:</span>-->
-                        <span>{{i['friends']}}</span>
-                        <p><a name="actEd" class="btn btn-default" href="#" role="button">View details »</a></p>
-                {% end %}
+                        <span>参与者:</span>
+                        <span name="friends">{{i['friends']}}</span>
+                        <p><a name="actEd" class="btn btn-default" href="/FBAA?activity={{i['name']}}&friends={{i['friends']}}" role="button">View details »</a></p>
+                    {% end %}
+                </div>
             </div>
             <div class="col-md-4 col-xs-12">
                 <h2>进行中的活动</h2>
+                <div name="actDetail">
                     {% for i in actingAct %}
                         <h3 name="actIng">{{i['name']}}</h3>
-                        <!--<span>参与者:</span>-->
-                        <span>{{i['friends']}}</span>
-                        <p><a name="actIng" class="btn btn-default" href="#" role="button">View details »</a></p>
+                        <span>参与者:</span>
+                        <span name="friends">{{i['friends']}}</span>
+                        <p><a name="actIng" class="btn btn-default" href="/FBAA?activity={{i['name']}}&friends={{i['friends']}}" role="button">View details »</a></p>
                     {% end %}
+                </div>
             </div>
             <div class="col-md-4 col-xs-12">
                 <h2>创建新的活动</h2>
                 <h3>现在就开始创建一个新的活动吧~</h3>
-                <p><a class="btn btn-default" href="/FBAA?activity=new" role="button">Create Activity »</a></p>
+                <p><a class="btn btn-default" href="/FBAA?activity=new&friends=''" role="button">Create Activity »</a></p>
             </div>
         </div>
         <hr />
@@ -90,21 +94,14 @@
 <script type="text/javascript">
     $(document).ready(function(){pageOnLoad();});
     function pageOnLoad(){
-        actEd=$("h3[name='actEd']");
-        aEd=$("a[name='actEd']");
-        $.each(actEd,function(i,actName){
-            $(aEd[i]).attr('href','/FBAA?activity='+$(actName).text());
-            //console.info($(actName).text())
-        });
-        actIng=$("h3[name='actIng']");
-        aIng=$("a[name='actIng']");
-        $.each(actIng,function(i,actName){
-            $(aIng[i]).attr('href','/FBAA?activity='+$(actName).text());
-            //console.info($(actName).text())
+        var allFriends=$("span[name='friends']");
+        $.each(allFriends,function(i,friends){
+            if ($(friends).text()==''||$(friends).text()==null){
+                $($(friends).parent()[0]).html('<h3>快去创建一个活动吧~<h3>');
+            }
         });
     }
 </script>
-
 </html>
 
 

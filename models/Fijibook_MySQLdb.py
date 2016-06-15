@@ -50,6 +50,17 @@ class Fijibook_MySQLdb(MySQLDatabase):
         except Exception as e:
             return {'code': 1, 'info': 'Error! from AddUser: ' + e.message}
 
+    def getUserId(self, user):
+        try:
+            cmd0 = "select id from User where user = '%s'" % (user)
+            rec0 = self.execute(cmd0)
+            if rec0['code'] == 0:#成功执行
+                return rec0
+            else:#code==1,其他错误
+                return {'code': 1, 'info': 'Error! User not exists!'}
+        except Exception as e:
+            return {'code': 1, 'info': 'Error! from getUserId: ' + e.message}
+
     def delUser(self, user):
         try:
             cmd = "delete from User \

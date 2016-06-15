@@ -8,6 +8,7 @@ from VerificationCode import VerificationCode
 import StringIO
 import datetime
 import sys
+import os
 import json
 
 class indexHandler(BaseHandler):
@@ -113,6 +114,29 @@ class registerHandler(tornado.web.RequestHandler):
                 self.redirect('/index')
             else:
                 self.render('register.html', info='Unknown error!.', isCorrect='')
+class AvatarHandler(BaseHandler):
+    def get(self):
+        user = self.get_current_user()
+        userId = Fijibook_MySQLdb().getUserId(user)
+        if not userId['code']:
+            avatarPath=os.path.join(os.path.dirname(__file__), os.pardir, 'users', str(userId['result'][0][0]), 'avatar')  #头像文件路径
+            try:
+                with open(avatarPath, 'rb') as f:
+                    avatarData = f.read()
+            except:
+                avatarPath=os.path.join(os.path.dirname(__file__), os.pardir, 'static', 'img', 'default.png')  #默认头像路径
+                with open(avatarPath, 'rb') as f:
+                    avatarData = f.read()
+        else:
+            avatarPath=os.path.join(os.path.dirname(__file__), os.pardir, 'static', 'img', 'default.png')  #默认头像路径
+            with open(avatarPath, 'rb') as f:
+                    avatarData = f.read()
+
+        #set content type
+        self.set_header('Content-type', 'image')
+        self.set_header('Content-length', len(avatarData))
+        #response write
+        self.write(avatarData)
 
 class VerificationImgHandler(BaseHandler):
     def get(self):
@@ -140,9 +164,30 @@ class LogoutHandler(BaseHandler):
         #if (self.get_argument("logout", None)):
 
 
-class MapHandler(BaseHandler):
+class ProfileHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
-        self.render('map.html')
+        user = self.get_current_user()
+        self.render('profile.html', user=user)
+
+    @tornado.web.authenticated
+    def post(self):
+        user = self.get_current_user()
+        userId = Fijibook_MySQLdb().getUserId(user)['result'][0][0]
+        # print rec0
+        avatar = self.request.files['file'] #提取表单中‘name’为‘file’的文件元数据
+        upload_path=os.path.join(os.path.dirname(__file__), os.pardir, 'users', str(userId))  #文件的暂存路径
+        if not os.path.exists(upload_path):
+            os.makedirs(upload_path)
+        # print upload_path
+        for meta in avatar:
+            filename='avatar'
+            filepath=os.path.join(upload_path, filename)
+            with open(filepath,'wb') as up:      #有些文件需要已二进制的形式存储，实际中可以更改
+                up.write(meta['body'])
+                self.write({'status': '成功'})
+        # print avatar
+
 
 class JSMapHandler(BaseHandler):
     def get(self):
@@ -154,6 +199,7 @@ class POIHandler(BaseHandler):
         self.render('POI.html')
 
 class RecordHandler(BaseHandler):
+    @tornado.web.authenticated
     def get(self):
         mydate = self.get_argument('myDate')
         user = self.get_current_user()
@@ -179,6 +225,7 @@ class RecordHandler(BaseHandler):
         recordJson = json.dumps(recordTmp)
         self.write(recordJson)
 
+    @tornado.web.authenticated
     def post(self):
         user = self.get_current_user()
         time = self.get_argument('time')
@@ -207,8 +254,8 @@ class FBAAIndexHandler(BaseHandler):
         user = self.get_current_user()
         sys.stdout.flush()
         res = Fijibook_MySQLdb().getActivity(user)
-        endedAct=[]
-        actingAct=[]
+        endedAct = []
+        actingAct = []
         if res['code']==1:#查询出错
             self.write('get activity failed!')
         elif res['code']==2:  #没查到记录
@@ -217,11 +264,13 @@ class FBAAIndexHandler(BaseHandler):
             # print res['result']
             for act in res['result']:
                 if act[2] == 1:
-                    endedAct.append({'name': act[0], 'friends': ('参与者：'+act[1])})
+                    endedAct.append({'name': act[0], 'friends': (act[1])})
                 elif act[2] == 0:
-                    actingAct.append({'name': act[0], 'friends': ('参与者：'+act[1])})
-            # print endedAct
-            # print actingAct
+                    actingAct.append({'name': act[0], 'friends': (act[1])})
+            if len(endedAct) == 0:
+                endedAct = ({'name': '没有活动哦~', 'friends': ''},)
+            elif len(actingAct) == 0:
+                actingAct = ({'name': '还不快创建一个~', 'friends': ''},)
             self.render('FBAAIndex.html', user=user, actingAct=actingAct, endedAct=endedAct)
 
 class FBAAHandler(BaseHandler):
@@ -232,18 +281,24 @@ class FBAAHandler(BaseHandler):
         incomeTypesRec = Fijibook_MySQLdb().getIncomeTypes(user)
         sys.stdout.flush()
         activity = self.get_argument('activity')
+        friends = self.get_argument('friends')
         if activity=='new':
-            print 'new'
+            # print 'new'
             self.render('FBAA.html', user=user, isbusy='false', friends=user, activity='', tbody='', thead='',
                             expensebody=expenseTypesRec['result'],
                             incomebody=incomeTypesRec['result'],)
         else:
             receive=Fijibook_MySQLdb().getActBalance(user, activity)
-            if receive['code']:  #查询出错
+            if receive['code'] == 1:  #查询出错
                 self.write('get activity balance failed!')
-            else:       #查到了记录
+            elif receive['code'] == 2:  #没查到
+                self.render('FBAA.html', user=user, isbusy='true', friends=friends, activity=activity, tbody=receive['result'],
+                            thead=['时间', '位置', '金额', '活动', '参与者', '付款人', '分类', '备注'],
+                                expensebody=expenseTypesRec['result'],
+                                incomebody=incomeTypesRec['result'],)
+            elif receive['code'] == 0:       #查到了记录
                 #print recive
-                print receive['result']
+                # print receive['result']
                 self.render('FBAA.html', user=user, isbusy='true', friends=receive['result'][0][4], activity=receive['result'][0][3], tbody=receive['result'],
                             thead=['时间', '位置', '金额', '活动', '参与者', '付款人', '分类', '备注'],
                                 expensebody=expenseTypesRec['result'],

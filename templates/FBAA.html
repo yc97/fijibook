@@ -268,7 +268,8 @@
                             </h4>
                          </div>
                          <div class="modal-body" id="balanceModalBody">
-                            <ul class="list-group" id="balanceList">
+                             <canvas id="balanceCv"></canvas>
+                            <ul class="list-group" id="balanceList" hidden>
                               <!--<li class="list-group-item">Cras justo odio</li>-->
                             </ul>
                          </div>
@@ -291,6 +292,7 @@
             <p>FijiBook 2016</p>
         </footer>
     </div>
+
 </body>
 
 
@@ -300,7 +302,7 @@
 <script src="http://echarts.baidu.com/build/dist/echarts-all.js"></script>
 <script src="../static/js/jquery.tagsinput.js"></script>
 <script src="../static/js/ajax-setup.js"></script>
-<!--<script src="//cdn.bootcss.com/html2canvas/0.5.0-beta3/html2canvas.min.js"></script>-->
+
 
 </html>
 
@@ -366,13 +368,16 @@
 
 //<!--新建activity js-->
     $('#confirm').click(function(){
-        if  ($('#confirm').attr("disabled")!="disabled"&&validate_actform($('#thisForm'))){
-            saveActivity();
+        if  ($('#confirm').attr("disabled")!="disabled"){
             var actName=$('#newActInput').val();
             var allFriends=$('#tags').val();
-            //console.info(friends)
-            var value=0;
-            freshRadar(actName,allFriends,value,100,0);
+            if (actName!=''&&actName!=null&&allFriends!=''&&allFriends!=null){
+                saveActivity();
+                //console.info(friends)
+                var value=0;
+                freshRadar(actName,allFriends,value,100,0);
+            }
+            else{alert('请输入活动名称及参与人数！');}
         }
     });
 
@@ -487,9 +492,9 @@ function saveActivity(){
 <script type="text/javascript">
     function validate_required(field,alerttxt)
     {
-    with (field)
+    with ($(field))
       {
-      if (value==null||value=="")
+      if (val()==null||val()=="")
         {alert(alerttxt);return false}
       else {return true}
       }
@@ -499,8 +504,8 @@ function saveActivity(){
     {
     with (thisform)
       {
-      if (validate_required(newActInput,"请输入活动!")==false)
-        {newActInput.focus();return false}
+      if (validate_required($('#newActInput'),"请输入活动!")==false)
+        {$('#newActInput').focus();return false}
       }
     }
 </script>
@@ -563,80 +568,79 @@ function saveActivity(){
     $(function () { $('#balanceModal').on('show.bs.modal', function () {
           $("#balanceList").html("");
             balance();
-            //createImg();
           })
        });
        //结算方案算法
     function balance(){
-                var actName= $('#newActInput').val();
-                var allFriends=$('#tags').val();
-                var friends=allFriends.split(',');
-                var friendsNum=friends.length;
-                var value=new Array(friends.length);
-                for (var k=0;k<friends.length;k++) {value[k]=0;}
-                var balance=new Array(friendsNum)
-                //console.info(value)
-                $.each($("tr[class='null']"),function(i,tr){
-                    //console.info($(tr).children());
-                    td=$(tr).children();
-                    $.each(friends,function(j,payer){
-                    //console.info(j,$(td[5]).text(),payer)
-                        if ($(td[5]).text()==payer)
-                        {
-                           value[j]+=Number($(td[2]).text());
-                        }
-                    });
-                });
-                //max=Math.max.apply(null, value);
-                var sum=Number(0);
-                $.each(value,function(i,v){sum+=v;});
-                ave=sum/value.length;
-
-                //freshRadar(actName,allFriends,value,max,ave);
-                $.each(friends,function(j,friend){
-                    balance[j]={
-                        friend: friend,
-                        data:(value[j]-ave)
-                    };
-                });
-
-                balanceSorted=balance.sort(by("data")).reverse();
-                //console.info(balanceSorted)
-                var last=friendsNum-1;
-                for (var i=0;i<friendsNum-1;i++)
+        var actName= $('#newActInput').val();
+        var allFriends=$('#tags').val();
+        var friends=allFriends.split(',');
+        var friendsNum=friends.length;
+        var value=new Array(friends.length);
+        for (var k=0;k<friends.length;k++) {value[k]=0;}
+        var balance=new Array(friendsNum)
+        //console.info(value)
+        $.each($("tr[class='null']"),function(i,tr){
+            //console.info($(tr).children());
+            td=$(tr).children();
+            $.each(friends,function(j,payer){
+            //console.info(j,$(td[5]).text(),payer)
+                if ($(td[5]).text()==payer)
                 {
-                    if (balanceSorted[i]['data']>0)
-                        {
-                            for (var j=last;j>0;j--)
-                            {
-                                if (balanceSorted[i]['data']+balanceSorted[j]['data']>0)
-                                    {   //console.info(balanceSorted[i]['data'],balanceSorted[j]['data'])
-                                        $("#balanceList").append("<h4><li class='list-group-item'><span class='label label-success'>"
-                                            +balanceSorted[j]['friend']+"</span>应给<span class='label label-info'>"
-                                            +balanceSorted[i]['friend']+"</span><span class='label label-danger'>"
-                                            +(-balanceSorted[j]['data']).toFixed(2)+"</span>元</li></h4>");
-                                        //console.info(balanceSorted[j]['friend']+'应该给'+balanceSorted[i]['friend']+(-balanceSorted[j]['data']).toFixed(2)+'元');
-                                        balanceSorted[i]['data']=balanceSorted[i]['data']+balanceSorted[j]['data'];
-                                        balanceSorted[j]['data']=0;
-                                        last=j-1;
-                                    }
-                                else
-                                    {
-                                        $("#balanceList").append("<h4><li class='list-group-item'><span class='label label-success'>"
-                                            +balanceSorted[j]['friend']+"</span>应给<span class='label label-info'>"
-                                            +balanceSorted[i]['friend']+"</span><span class='label label-danger'>"
-                                            +(balanceSorted[i]['data']).toFixed(2)+"</span>元</li></h4>");
-                                        //console.info(balanceSorted[j]['friend']+'应该给'+balanceSorted[i]['friend']+(balanceSorted[i]['data']).toFixed(2)+'元');
-                                        balanceSorted[j]['data']=balanceSorted[i]['data']+balanceSorted[j]['data'];
-                                        balanceSorted[i]['data']=0;
-                                        last=j;
-                                        break;
-                                    }
-                            }
-                        }
-                    else
-                    {break;}
+                   value[j]+=Number($(td[2]).text());
                 }
+            });
+        });
+        //max=Math.max.apply(null, value);
+        var sum=Number(0);
+        $.each(value,function(i,v){sum+=v;});
+        ave=sum/value.length;
+
+        //freshRadar(actName,allFriends,value,max,ave);
+        $.each(friends,function(j,friend){
+            balance[j]={
+                friend: friend,
+                data:(value[j]-ave)
+            };
+        });
+
+        balanceSorted=balance.sort(by("data")).reverse();
+        //console.info(balanceSorted)
+        var last=friendsNum-1;
+        for (var i=0;i<friendsNum-1;i++)
+        {
+            if (balanceSorted[i]['data']>0)
+                {
+                    for (var j=last;j>0;j--)
+                    {
+                        if (balanceSorted[i]['data']+balanceSorted[j]['data']>0)
+                            {   //console.info(balanceSorted[i]['data'],balanceSorted[j]['data'])
+                                $("#balanceList").append("<h4><li class='list-group-item'><span class='label label-success'>"
+                                    +balanceSorted[j]['friend']+"</span>应给<span class='label label-info'>"
+                                    +balanceSorted[i]['friend']+"</span><span class='label label-danger'>"
+                                    +(-balanceSorted[j]['data']).toFixed(2)+"</span>元</li></h4>");
+                                //console.info(balanceSorted[j]['friend']+'应该给'+balanceSorted[i]['friend']+(-balanceSorted[j]['data']).toFixed(2)+'元');
+                                balanceSorted[i]['data']=balanceSorted[i]['data']+balanceSorted[j]['data'];
+                                balanceSorted[j]['data']=0;
+                                last=j-1;
+                            }
+                        else
+                            {
+                                $("#balanceList").append("<h4><li class='list-group-item'><span class='label label-success'>"
+                                    +balanceSorted[j]['friend']+"</span>应给<span class='label label-info'>"
+                                    +balanceSorted[i]['friend']+"</span><span class='label label-danger'>"
+                                    +(balanceSorted[i]['data']).toFixed(2)+"</span>元</li></h4>");
+                                //console.info(balanceSorted[j]['friend']+'应该给'+balanceSorted[i]['friend']+(balanceSorted[i]['data']).toFixed(2)+'元');
+                                balanceSorted[j]['data']=balanceSorted[i]['data']+balanceSorted[j]['data'];
+                                balanceSorted[i]['data']=0;
+                                last=j;
+                                break;
+                            }
+                    }
+                }
+            else
+            {break;}
+        }
     }
 
 //用于对象数组排序
@@ -686,19 +690,42 @@ var by = function(name){
         }
     }
 </script>
-<!--将div保存为图片...失败.-->
-<!--<script type="text/javascript">-->
-    <!--function createImg(){-->
-        <!--console.info($('#balanceList'));-->
-        <!--html2canvas(window.body,-->
-        <!--{-->
-            <!--onrendered: function(canvas)-->
-            <!--{-->
-                <!--document.body.appendChild(canvas);-->
-                <!--$('#saveImg').attr( 'href' , canvas.toDataURL() ) ;-->
-    		    <!--$('#saveImg').attr( 'download' , 'balance.png' ) ;-->
-    		<!--},-->
-        <!--});-->
-    <!--}-->
 
-<!--</script>-->
+<!--保存为图片-->
+<script type="text/javascript">
+    //$('#balanceCv').attr('width',0.8*window.screen.availWidth);
+    //$('#balanceCv').attr('height',0.8*window.screen.availHeight);
+    $('#balanceCv').attr('width',500);
+    $('#balanceCv').attr('height',500);
+    var balanceCv=document.getElementById("balanceCv");
+    var bg2=new Image();
+    bg2.src='../static/img/3.jpg';
+    ShowText(balanceCv,'helllll',10,10,bg2);
+
+    function ShowText(canvas,text,x,y,bg2){
+        var ctx=canvas.getContext("2d");
+        var fpadd=10;//规定内间距
+        var fsz=Math.ceil((canvas.width-fpadd*2)/text.length);//根据字数计算字体大小
+        console.info(fsz,text.length)
+        ctx.font=fsz+"px sucaijiayuan";
+        var tw=ctx.measureText(text).width;//文字真实宽度
+        //var ftop=(canvas.height-fsz)/2-30;//根据字体大小计算文字top
+        //var fleft=(canvas.width-tw)/2+16;//根据字体大小计算文字left
+        //console.info(ftop,fleft)
+        var ftop=10;//根据字体大小计算文字top
+        var fleft=10;//根据字体大小计算文字left
+        ctx.textBaseline="top";//设置绘制文本时的文本基线。
+        var woodfill = ctx.createPattern(bg2,"repeat");//设置图片为笔刷
+        ctx.fillStyle=woodfill;
+        ctx.shadowBlur=20;//阴影程度
+        ctx.shadowOffsetX=10;
+        ctx.shadowOffsetY=10;
+        ctx.shadowColor="rgba(0,0,0,1)";
+        ctx.fillText(text,fleft,ftop);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle ="rgba(255,255,255,0.4)";
+        ctx.strokeText(text, fleft, ftop);
+        ctx.restore();
+    }
+
+</script>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0" />
+<link rel="stylesheet" href="//cdn.bootcss.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<!--<link href="../static/css/login.css" rel="stylesheet">-->
+<link href="../static/css/avatar.css" rel="stylesheet">
+<html>
+<head><title>FijiBook-profile</title></head>
+<body>
+    <nav class="navbar navbar-default navbar-static-top hidden">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar"></button>
+                <a class="navbar-brand" href="#">FijiBook</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/index">Home</a></li>
+                    <li><a href="/FBAAIndex">AA记账</a></li>
+                    <li><a href="/charts">账单</a></li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li  class="active" ><a id="user" href="#">{{user}}</a></li>
+                    <li><a href="/logout">注销</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="jumbotron" id="content" tabindex="-1">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 col-xs-12">
+                        <h1> 个人资料 </h1>
+                        <!--<p>秀出自我风采~</p>-->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3 col-xs-12 hidden-xs hidden-sm">
+                <h2>sidebar</h2>
+            </div>
+            <div class="col-md-9 col-xs-12">
+                <!-- 设置头像模态框（Modal） -->
+                <h2>头像</h2>
+                <div class="col-md-12 col-xs-12">
+                    <img id="avatar" src="/avatar">
+                </div>
+                <button class="btn btn-lg btn-default" data-toggle="modal" data-target="#myModal">设置头像</button>
+                <button class="btn btn btn-lg btn-default" id="submit" disabled="disabled">保存</button>
+
+                <div class="modal fade modal-abs" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="{ position:fixed;top:0px}">
+                   <div class="modal-dialog">
+                      <div class="modal-content">
+                         <div class="modal-header">
+                            <button type="button" class="close"
+                               data-dismiss="modal" aria-hidden="true">
+                                  &times;
+                            </button>
+                            <h4 class="modal-title" id="myModalLabel">
+                               设置头像
+                            </h4>
+                         </div>
+                         <div class="modal-body">
+                             <div class="row">
+                               <div class="col-md-12 col-xs-12">
+                                   <input id="file" type="file" class="hidden" autocomplete="off">
+                                   <div class="col-md-5 col-md-offset-3 col-xs-12">
+                                       <div class="imageBox" id="imgBox" style="background-image:url('../static/img/default.png');background-position:37.5px 37.5px;">
+                                            <div class="thumbBox"></div>
+                                            <div class="spinner hidden">Loading...</div>
+                                       </div>
+                                   </div>
+                                   <div class="col-md-4 col-xs-6">
+                                       <img id="preview" src="">
+                                   </div>
+                                   <div class="col-md-5 col-md-offset-3 col-xs-12">
+                                       <button class="btn btn-default" onclick="$('input[id=file]').click();"><span class="glyphicon glyphicon-circle-arrow-up" aria-hidden="true"></span></button>
+                                       <button class="btn btn-default" id="btnZoomIn"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+                                       <button class="btn btn-default" id="btnZoomOut"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span></button>
+                                       <button class="btn btn-default" id="btnRefresh"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button>
+                                   </div>
+                                   <div class="col-md-5 col-md-offset-3 col-xs-12">
+                                       <button class="btn btn-default" id="btnLeft"><span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span></button>
+                                       <button class="btn btn-default" id="btnUp"><span class="glyphicon glyphicon-arrow-up" aria-hidden="true"></span></button>
+                                       <button class="btn btn-default" id="btnDown"><span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span></button>
+                                       <button class="btn btn-default" id="btnRight"><span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span></button>
+                                   </div>
+                               </div>
+                               <!--<div class="col-md-6 col-xs-5">-->
+                                   <!--<img id="preview" src="">-->
+                               <!--</div>-->
+                             </div>
+                         </div>
+                         <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <button type="button" id="confirm" class="btn btn-primary" data-dismiss="modal">确认</button>
+                         </div>
+                      </div><!-- /.modal-content -->
+                    </div><!-- /.modal -->
+                </div>
+            </div>
+        </div>
+    </div> <!-- /container -->
+</body>
+<script src="../static/js/debuggap.js"></script>
+<script src="//cdn.bootcss.com/jquery/1.11.3/jquery.min.js"></script>
+<script src="//cdn.bootcss.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script src="../static/js/ajax-setup.js"></script>
+<script src="//cdn.bootcss.com/hammer.js/2.0.6/hammer.min.js"></script>
+<script src="../static/js/cropbox.js"></script>
+</html>
+
+<script type="text/javascript">
+    $(window).load(function() {
+        var options =
+        {
+            thumbBox: '.thumbBox',
+            spinner: '.spinner',
+            imgSrc: '../static/img/default.png'
+        }
+
+        var cropper=$('.imageBox').cropbox(options);
+        previewInit();
+
+        function previewInit(){
+            previewShow();
+            $('.imageBox').bind('mousewheel DOMMouseScroll', previewShow);
+            $('.imageBox').bind('mousedown', previewShow);
+            $('.imageBox').bind('mousemove', previewShow);
+        }
+        function previewShow(){
+            var img = cropper.getDataURL()
+            $('#preview').attr('src',img);
+        }
+
+        $('#file').on('change', function(){
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                options.imgSrc = e.target.result;
+                cropper = $('.imageBox').cropbox(options);
+                previewShow();
+            }
+            reader.readAsDataURL(this.files[0]);
+            this.files = [];
+            setTimeout(function(){
+                $('.imageBox').css('background-size', 150 +'px ' + 150 + 'px');
+                $('.imageBox').css('background-position', 0 +'px ' + 0 + 'px');
+                previewShow();
+            },100);
+        })
+
+        $("#confirm").click(function(){
+            img = $('#preview').attr('src');
+            $('#avatar').attr('src',img);
+            $("#submit").removeAttr('disabled')
+        });
+        $('#btnZoomIn').on('click', function(){
+            cropper.zoomIn();
+            previewShow();
+        })
+        $('#btnZoomOut').on('click', function(){
+            cropper.zoomOut();
+            previewShow();
+        })
+        $('#btnLeft').on('click', function(){
+            imgMove(-5,0);
+            previewShow();
+        })
+        $('#btnUp').on('click', function(){
+            imgMove(0,-5);
+            previewShow();
+        })
+        $('#btnDown').on('click', function(){
+            imgMove(0,5);
+            previewShow();
+        })
+        $('#btnRight').on('click', function(){
+            imgMove(5,0);
+            previewShow();
+        })
+        $('#btnRefresh').on('click', function(){
+            $('.imageBox').css('background-size', 150 +'px ' + 150 + 'px');
+            $('.imageBox').css('background-position', 0 +'px ' + 0 + 'px');
+            previewShow();
+        })
+        hammer();
+        function hammer(){
+            //创建一个新的hammer对象并且在初始化时指定要处理的dom元素
+            var hammertime = new Hammer(document.getElementById("imgBox"));
+
+            //为该dom元素指定触屏移动事件
+            hammertime.on("pan", function (e) {
+                //控制台输出
+                console.log(e);
+                //document.getElementById("result").innerHTML += "X偏移量：【" + e.deltaX + "】，Y偏移量：【" + e.deltaY + "】<br />";
+                imgMove(e.deltaX,e.deltaY);
+            });
+
+            //为该dom元素指定触屏移动事件
+            hammertime.add(new Hammer.Pinch());
+
+             //添加捏合事件
+            hammertime.on("pinchin", function (e) {
+              cropper.ratio*=0.9;
+              setBackground();
+              previewShow();
+            });
+
+             //添加扩张事件
+            hammertime.on("pinchout", function (e) {
+              cropper.ratio*=1.1;
+              setBackground();
+              previewShow();
+            });
+        }
+        setBackground = function(){
+            var w =  parseInt(cropper.image.width)*cropper.ratio;
+            var h =  parseInt(cropper.image.height)*cropper.ratio;
+
+            var pw = ($('.imageBox').width() - w) / 2;
+            var ph = ($('.imageBox').height() - h) / 2;
+
+            $('.imageBox').css({
+                'background-image': 'url(' + cropper.image.src + ')',
+                'background-size': w +'px ' + h + 'px',
+                'background-position': pw + 'px ' + ph + 'px',
+                'background-repeat': 'no-repeat'});
+        }
+        function imgMove(x,y){
+            var bg = $('.imageBox').css('background-position').split(' ');
+            var bgX = x + parseInt(bg[0]);
+            var bgY = y + parseInt(bg[1]);
+            $('.imageBox').css('background-position', bgX +'px ' + bgY + 'px');
+            previewShow();
+        }
+    });
+</script>
+<script type="text/javascript">
+    $("#submit").click(function(){
+        //alert('hhh');
+        if($('#submit').attr("disabled")!="disabled"){
+            imgSrc=$("#avatar").attr('src');
+            //console.log(imgSrc);
+            imgData=imgSrc.split(',')[1];   //取出其中 base64 信息
+            imgData=window.atob(imgData);   //window.atob 转换成由二进制字符串
+
+            var ia = new Uint8Array(imgData.length);   //Uint8Array转换 以blob
+            for (var i = 0; i < imgData.length; i++) {
+                ia[i] = imgData.charCodeAt(i);
+            };
+
+            var avatar=new Blob([ia], {type:"image/png"}); //转换为blob
+            //alert('hhh');
+            //构建FormData 顾名思义，就是用来创建表单数据的，用 append 以键值的形式将数据加入进去即可。
+             if(!window.FormData) {　
+                alert('your brower is too old');
+                return false;
+            }
+            else{
+                var fd=new FormData();
+                fd.append('file',avatar);
+                //console.log(fd);
+                $.ajax({
+                    url:"/profile",
+                    type:"POST",
+                    data:fd,
+                    processData: false,
+                    contentType: false,
+                    dataType:'json',
+                    success:function(res){alert('修改'+res['status']+'，正在返回首页');window.history.back(-1);},
+                });
+            }
+        }
+    });
+</script>

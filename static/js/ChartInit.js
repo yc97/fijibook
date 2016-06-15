@@ -25,21 +25,21 @@ allPieoption = {
                 data:['']
             },
             toolbox: {
-        orient : 'vertical',
-        x : 'right',
-        y : 'bottom',
-        show : true,
-        feature : {
-            mark : {show: true},
-            dataView : {show: true, readOnly: false},
-//            magicType : {
-//                show: true,
-//                type: ['pie', 'funnel']
-//            },
-            restore : {show: true},
-            saveAsImage : {show: true}
-        }
-    },
+                orient : 'vertical',
+                x : 'right',
+                y : 'bottom',
+                show : true,
+                feature : {
+                    mark : {show: true},
+                    dataView : {show: true, readOnly: false},
+        //            magicType : {
+        //                show: true,
+        //                type: ['pie', 'funnel']
+        //            },
+                    restore : {show: true},
+                    saveAsImage : {show: true}
+                }
+            },
             calculable : false,
             series : [
                 {
